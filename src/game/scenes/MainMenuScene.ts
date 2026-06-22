@@ -18,8 +18,8 @@ export class MainMenuScene extends Phaser.Scene {
     const root = setUi(`<main class="screen">
       <section class="screen-inner menu-grid">
         <div class="title-stack">
-          <h1>Núcleo 2048</h1>
-          <p>Roguelike de fusiones, objetivos letales y talismanes que rompen reglas.</p>
+          <h1>Rog2048</h1>
+          <p>Fusiones, objetivos letales y talismanes que rompen reglas.</p>
         </div>
         <div class="button-column">
           ${pixelButton({ id: 'new-run', label: 'Nueva partida', icon: '▶' })}

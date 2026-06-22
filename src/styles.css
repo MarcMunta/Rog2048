@@ -48,6 +48,7 @@ canvas {
 #game-root {
   position: fixed;
   inset: 0;
+  z-index: 0;
   background:
     radial-gradient(circle at 18% 24%, rgba(64, 246, 210, 0.12), transparent 24%),
     radial-gradient(circle at 82% 12%, rgba(255, 77, 141, 0.1), transparent 20%),
@@ -57,7 +58,7 @@ canvas {
 #ui-root {
   position: fixed;
   inset: 0;
-  z-index: 10;
+  z-index: 20;
   pointer-events: none;
 }
 
@@ -262,6 +263,16 @@ canvas {
   font-size: 20px;
 }
 
+.reward-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: var(--gold);
+  background: rgba(255, 204, 102, 0.08);
+  border: 1px solid rgba(255, 204, 102, 0.28);
+}
+
 .class-card small,
 .reward-card span,
 .shop-card span,
@@ -298,6 +309,292 @@ canvas {
   color: var(--gold);
   text-transform: uppercase;
   font-size: 12px;
+}
+
+.game-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  display: inline-block;
+  vertical-align: -4px;
+}
+
+.combat-shell {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.combat-topbar,
+.player-stack,
+.relic-rail,
+.skill-dock {
+  position: fixed;
+  background: rgba(8, 10, 24, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 14px 42px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(8px);
+}
+
+.combat-topbar {
+  top: 12px;
+  left: 50%;
+  width: min(760px, calc(100vw - 28px));
+  min-height: 94px;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(150px, 230px) minmax(150px, 1fr);
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.enemy-title,
+.enemy-core,
+.enemy-vitals,
+.stat-panel {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.enemy-title strong {
+  font-size: 18px;
+  color: var(--text);
+  text-shadow: 0 0 12px rgba(64, 246, 210, 0.26);
+}
+
+.enemy-title small,
+.enemy-core small,
+.enemy-vitals small,
+.skill-copy small {
+  color: var(--muted);
+  line-height: 1.25;
+}
+
+.enemy-core {
+  justify-items: center;
+  text-align: center;
+  color: var(--gold);
+}
+
+.enemy-core strong {
+  font-size: 42px;
+  line-height: 0.9;
+  text-shadow: 0 0 14px rgba(255, 204, 102, 0.46);
+}
+
+.enemy-vitals {
+  text-align: right;
+}
+
+.status-row {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 6px;
+  min-height: 22px;
+}
+
+.status-chip {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  padding: 3px 7px;
+  color: var(--cyan);
+  border: 1px solid rgba(64, 246, 210, 0.35);
+  background: rgba(64, 246, 210, 0.08);
+  font-size: 12px;
+  pointer-events: auto;
+}
+
+.status-chip.danger {
+  color: var(--danger);
+  border-color: rgba(251, 113, 133, 0.45);
+  background: rgba(251, 113, 133, 0.08);
+}
+
+.player-stack {
+  left: 14px;
+  top: 128px;
+  width: 188px;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.stat-panel > span,
+.stat-grid-mini span,
+.turn-chip,
+.preview-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-panel strong {
+  font-size: 24px;
+}
+
+.stat-grid-mini {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.stat-grid-mini span,
+.turn-chip,
+.preview-chip {
+  min-height: 32px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.preview-chip {
+  justify-content: space-between;
+}
+
+.preview-chip i {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  color: var(--gold);
+  background: rgba(255, 204, 102, 0.12);
+  border: 1px solid rgba(255, 204, 102, 0.34);
+  font-style: normal;
+}
+
+.relic-rail {
+  right: 14px;
+  top: 128px;
+  width: 74px;
+  max-height: calc(100vh - 246px);
+  padding: 8px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.rail-title,
+.dock-title {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.relic-list {
+  display: grid;
+  gap: 7px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.skill-dock {
+  left: 50%;
+  bottom: 12px;
+  width: min(820px, calc(100vw - 30px));
+  transform: translateX(-50%);
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.skill-dock .skill-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+}
+
+.skill-button {
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 36px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.skill-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: rgba(64, 246, 210, 0.08);
+  border-color: rgba(64, 246, 210, 0.55);
+}
+
+.skill-button.selecting {
+  outline: 2px solid var(--gold);
+  box-shadow: 0 0 18px rgba(255, 204, 102, 0.22);
+}
+
+.skill-icon,
+.relic-chip {
+  display: grid;
+  place-items: center;
+}
+
+.skill-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--cyan);
+  background: rgba(64, 246, 210, 0.08);
+  border: 1px solid rgba(64, 246, 210, 0.28);
+}
+
+.skill-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.skill-copy strong,
+.skill-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skill-copy strong {
+  font-size: 14px;
+}
+
+.skill-cost {
+  min-width: 34px;
+  justify-self: end;
+  padding: 4px 5px;
+  color: var(--bg);
+  background: var(--cyan);
+  text-align: center;
+  font-weight: 700;
+}
+
+.relic-chip {
+  width: 44px;
+  height: 44px;
+  color: var(--cyan);
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  pointer-events: auto;
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease;
+}
+
+.relic-chip:hover {
+  transform: translateX(-2px);
+  border-color: var(--gold);
 }
 
 .combat-hud {
@@ -473,11 +770,9 @@ canvas {
 }
 
 .map-node {
-  --x-step: calc(100% / 6);
-  --lane-offset: calc((var(--lane) - 1) * 18%);
   position: absolute;
-  left: calc(9% + var(--depth) * 16.4% + var(--lane-offset));
-  top: calc(46% + (var(--lane) - 1) * 18%);
+  left: calc(10% + var(--depth) * 16%);
+  top: calc(32% + var(--lane) * 18%);
   width: 86px;
   height: 70px;
   display: grid;
@@ -638,8 +933,8 @@ canvas {
   .map-node {
     width: 72px;
     height: 62px;
-    left: calc(11% + var(--depth) * 15.8% + (var(--lane) - 1) * 12%);
-    top: calc(48% + (var(--lane) - 1) * 15%);
+    left: calc(11% + var(--depth) * 15.6%);
+    top: calc(34% + var(--lane) * 15%);
     font-size: 11px;
   }
 
@@ -654,5 +949,130 @@ canvas {
   *::after {
     animation-duration: 1ms !important;
     transition-duration: 1ms !important;
+  }
+}
+
+.relic-rail .relic-chip {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font-size: 0;
+  white-space: normal;
+}
+
+.reward-card {
+  animation: card-rise 320ms ease both;
+}
+
+.reward-card:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.reward-card:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .combat-topbar {
+    top: 8px;
+    width: calc(100vw - 16px);
+    grid-template-columns: 1fr 112px 1fr;
+    min-height: 86px;
+    padding: 8px;
+  }
+
+  .enemy-core strong {
+    font-size: 32px;
+  }
+
+  .player-stack {
+    left: 8px;
+    top: 104px;
+    width: calc(50vw - 14px);
+    grid-template-columns: 1fr;
+    padding: 8px;
+  }
+
+  .relic-rail {
+    right: 8px;
+    top: 104px;
+    width: calc(50vw - 14px);
+    max-height: 74px;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+  }
+
+  .relic-list {
+    grid-auto-flow: column;
+    grid-auto-columns: 38px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .relic-rail .relic-chip {
+    width: 38px;
+    height: 38px;
+  }
+
+  .skill-dock {
+    bottom: 8px;
+    width: calc(100vw - 16px);
+  }
+
+  .skill-dock .skill-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .skill-dock .skill-button {
+    min-height: 50px;
+    grid-template-columns: 28px 1fr 34px;
+  }
+
+  .skill-copy small {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .combat-topbar {
+    grid-template-columns: 1fr 88px;
+  }
+
+  .enemy-vitals {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+
+  .status-row {
+    display: none;
+  }
+
+  .player-stack {
+    width: calc(100vw - 16px);
+    top: 138px;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stat-panel {
+    grid-column: 1 / -1;
+  }
+
+  .relic-rail {
+    display: none;
+  }
+
+  .skill-dock .skill-row {
+    grid-template-columns: 1fr 1fr;
   }
 }

@@ -16,7 +16,7 @@ import { CollectionScene } from './game/scenes/CollectionScene';
 import { SettingsScene } from './game/scenes/SettingsScene';
 
 const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
+  type: Phaser.CANVAS,
   parent: 'game-root',
   backgroundColor: '#080816',
   scale: {

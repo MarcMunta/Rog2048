@@ -20,7 +20,10 @@ export type RelicEffectType =
   | 'forgeBoost'
   | 'delayOnBigMerge'
   | 'lowHpDamage'
-  | 'betterPreview';
+  | 'betterPreview'
+  | 'thirdEightCreates16'
+  | 'firstSpawnUpgraded'
+  | 'comboBurn';
 
 export interface RelicDefinition {
   id: string;

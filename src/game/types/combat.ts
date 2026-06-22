@@ -48,6 +48,12 @@ export interface CombatPlayerState {
   gold: number;
 }
 
+export interface CombatStatusEffects {
+  enemyBurn: number;
+  empowered: number;
+  drained: number;
+}
+
 export interface CombatState {
   id: string;
   status: CombatStatus;
@@ -60,6 +66,8 @@ export interface CombatState {
   firstMergeEchoed: boolean;
   exactDuplicated: boolean;
   delayedDamageBonus: number;
+  eightMergeCounter: number;
+  statusEffects: CombatStatusEffects;
   skillStates: SkillState[];
   lastDirection: Direction | null;
   selectionHint: string | null;

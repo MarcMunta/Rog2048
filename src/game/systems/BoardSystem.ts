@@ -186,6 +186,15 @@ export class BoardSystem {
     return { tile, position };
   }
 
+  static addTileValue(state: BoardState, value: number, rng = new Random(), cursed = false): SpawnEvent | null {
+    const empty = this.emptyPositions(state);
+    if (empty.length === 0) return null;
+    const position = rng.pick(empty);
+    const tile = this.createTile(state, value, cursed);
+    this.setTile(state, position, tile);
+    return { tile, position };
+  }
+
   static ensurePreview(state: BoardState, rng = new Random(), options: SpawnOptions = {}): void {
     while (state.spawnPreview.length < 3) {
       state.spawnPreview.push(this.rollSpawnValue(rng, options));

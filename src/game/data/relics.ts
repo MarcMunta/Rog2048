@@ -147,6 +147,27 @@ export const RELICS: RelicDefinition[] = [
     rarity: 'common',
     description: 'La vista previa favorece apariciones de 4 y 8.',
     effect: 'betterPreview'
+  },
+  {
+    id: 'eightGate',
+    name: 'Puerta del Ocho',
+    rarity: 'rare',
+    description: 'Cada tercera fusión que crea 8 genera un 16 extra.',
+    effect: 'thirdEightCreates16'
+  },
+  {
+    id: 'firstSpark',
+    name: 'Primera Chispa',
+    rarity: 'common',
+    description: 'La primera ficha inicial de cada combate sube un nivel.',
+    effect: 'firstSpawnUpgraded'
+  },
+  {
+    id: 'emberMandate',
+    name: 'Mandato de Brasa',
+    rarity: 'legendary',
+    description: 'Combo 4+ quema al enemigo durante 2 turnos.',
+    effect: 'comboBurn'
   }
 ];
 

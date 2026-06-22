@@ -1,5 +1,6 @@
 import { RunSystem } from '../systems/RunSystem';
 import type { MapNodeState } from '../types/run';
+import { iconSvg } from '../assets/icons';
 
 export function mapNode(node: MapNodeState, available: boolean): string {
   const status = node.cleared ? 'cleared' : available ? 'available' : 'locked';
@@ -13,12 +14,12 @@ export function mapNode(node: MapNodeState, available: boolean): string {
 
 export function iconFor(type: MapNodeState['type']): string {
   const icons: Record<MapNodeState['type'], string> = {
-    combat: '⚔',
-    elite: '◆',
-    shop: '¢',
-    event: '?',
-    rest: '✚',
-    boss: '☉'
+    combat: iconSvg('blade'),
+    elite: iconSvg('prism'),
+    shop: iconSvg('coin'),
+    event: iconSvg('eye'),
+    rest: iconSvg('heart'),
+    boss: iconSvg('ember')
   };
   return icons[type];
 }

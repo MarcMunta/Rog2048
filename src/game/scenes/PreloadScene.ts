@@ -9,7 +9,7 @@ export class PreloadScene extends Phaser.Scene {
   create(): void {
     sceneBackground(this);
     const title = this.add
-      .text(this.scale.width / 2, this.scale.height / 2, 'NÚCLEO 2048', {
+      .text(this.scale.width / 2, this.scale.height / 2, 'ROG2048', {
         fontFamily: 'Courier New, monospace',
         fontSize: '32px',
         color: '#40f6d2',

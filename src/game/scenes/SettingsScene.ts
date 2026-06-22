@@ -30,10 +30,13 @@ export class SettingsScene extends Phaser.Scene {
           ${pixelButton({ id: 'back', label: 'Volver', variant: 'ghost' })}
         </div>
         <div class="settings-grid">
-          <label class="setting-row"><span>Volumen</span><input id="volume" type="range" min="0" max="1" step="0.05" value="${settings.masterVolume}" /></label>
+          <label class="setting-row"><span>Volumen maestro</span><input id="volume" type="range" min="0" max="1" step="0.05" value="${settings.masterVolume}" /></label>
+          <label class="setting-row"><span>Volumen SFX</span><input id="sfx" type="range" min="0" max="1" step="0.05" value="${settings.sfxVolume}" /></label>
+          <label class="setting-row"><span>Volumen música</span><input id="music" type="range" min="0" max="1" step="0.05" value="${settings.musicVolume}" /></label>
           <label class="setting-row"><span>Temblor de pantalla</span><input id="shake" type="checkbox" ${settings.screenShake ? 'checked' : ''} /></label>
           <label class="setting-row"><span>Velocidad animación</span><input id="speed" type="range" min="0.5" max="1.5" step="0.1" value="${settings.animationSpeed}" /></label>
           <label class="setting-row"><span>Movimiento reducido</span><input id="motion" type="checkbox" ${settings.reducedMotion ? 'checked' : ''} /></label>
+          <div class="setting-row"><span>Control móvil</span><small>Desliza sobre el tablero. Toca una habilidad; si brilla, toca una ficha.</small></div>
         </div>
         <h3>Estadísticas</h3>
         <div class="stat-grid">
@@ -51,6 +54,14 @@ export class SettingsScene extends Phaser.Scene {
 
     root.querySelector<HTMLInputElement>('#volume')?.addEventListener('input', (event) => {
       gameStore.profile.settings.masterVolume = Number((event.target as HTMLInputElement).value);
+      gameStore.saveProfileOnly();
+    });
+    root.querySelector<HTMLInputElement>('#sfx')?.addEventListener('input', (event) => {
+      gameStore.profile.settings.sfxVolume = Number((event.target as HTMLInputElement).value);
+      gameStore.saveProfileOnly();
+    });
+    root.querySelector<HTMLInputElement>('#music')?.addEventListener('input', (event) => {
+      gameStore.profile.settings.musicVolume = Number((event.target as HTMLInputElement).value);
       gameStore.saveProfileOnly();
     });
     root.querySelector<HTMLInputElement>('#speed')?.addEventListener('input', (event) => {

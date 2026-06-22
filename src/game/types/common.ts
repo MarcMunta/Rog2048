@@ -7,6 +7,8 @@ export interface Weighted<T> {
 
 export interface SettingsState {
   masterVolume: number;
+  sfxVolume: number;
+  musicVolume: number;
   screenShake: boolean;
   animationSpeed: number;
   reducedMotion: boolean;
@@ -35,6 +37,8 @@ export interface ProfileState {
 
 export const DEFAULT_SETTINGS: SettingsState = {
   masterVolume: 0.65,
+  sfxVolume: 0.85,
+  musicVolume: 0.35,
   screenShake: true,
   animationSpeed: 1,
   reducedMotion: false

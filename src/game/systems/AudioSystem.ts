@@ -33,7 +33,8 @@ export class AudioSystem {
 
   static play(key: SfxKey): void {
     const settings = gameStore.profile.settings;
-    if (settings.masterVolume <= 0) return;
+    const volume = settings.masterVolume * settings.sfxVolume;
+    if (volume <= 0) return;
     const context = this.getContext();
     if (!context) return;
     const config = SFX[key];
@@ -44,7 +45,7 @@ export class AudioSystem {
     oscillator.frequency.setValueAtTime(config.frequency, now);
     if (config.slide) oscillator.frequency.exponentialRampToValueAtTime(Math.max(20, config.frequency + config.slide), now + config.duration);
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.12 * settings.masterVolume, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.12 * volume, now + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + config.duration);
     oscillator.connect(gain).connect(context.destination);
     oscillator.start(now);

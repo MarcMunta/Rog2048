@@ -50,6 +50,12 @@ export class CombatSystem {
       firstMergeEchoed: false,
       exactDuplicated: false,
       delayedDamageBonus: 0,
+      eightMergeCounter: 0,
+      statusEffects: {
+        enemyBurn: 0,
+        empowered: 0,
+        drained: 0
+      },
       skillStates: run.skillIds.map((id) => ({ id, cooldownLeft: 0 })),
       lastDirection: null,
       selectionHint: null
@@ -95,6 +101,7 @@ export class CombatSystem {
     }
 
     RelicSystem.afterMove(this.run, this.state, result);
+    this.applyBurnDamage(result);
     EnemySystem.applySpecials(this.state, this.run, result, this.rng);
 
     if (this.state.enemy.hp > 0) {
@@ -139,7 +146,10 @@ export class CombatSystem {
 
     const damage = this.applyMergeDamage(operation.merges, result, 'skill');
     if (damage > 0) this.applyDamageToEnemy(damage, result);
+    if (operation.merges.length > 0) this.state.combo = clamp(this.state.combo + operation.merges.length, 0, 99);
+    result.combo = this.state.combo;
     RelicSystem.onSkillUsed(this.run, this.state, result);
+    this.applyBurnDamage(result);
     this.finishAction(result);
     return result;
   }
@@ -196,6 +206,16 @@ export class CombatSystem {
       this.state.status = 'won';
       result.logs.push(`${this.state.enemy.name} cae.`);
     }
+  }
+
+  private applyBurnDamage(result: CombatActionResult): void {
+    if (this.state.enemy.hp <= 0 || this.state.statusEffects.enemyBurn <= 0) return;
+    const burnDamage = 3 + Math.floor(this.state.combo / 3);
+    this.state.statusEffects.enemyBurn -= 1;
+    result.logs.push(`Brasa: ${burnDamage} daño.`);
+    result.bigHit ||= burnDamage >= 6;
+    result.damage += burnDamage;
+    this.applyDamageToEnemy(burnDamage, result);
   }
 
   private applyNoMovesPenalty(result: CombatActionResult): void {

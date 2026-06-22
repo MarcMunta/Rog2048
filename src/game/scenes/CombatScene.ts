@@ -4,6 +4,7 @@ import { AnimationSystem } from '../systems/AnimationSystem';
 import { AudioSystem } from '../systems/AudioSystem';
 import { gameStore } from '../systems/GameStore';
 import { BoardSystem } from '../systems/BoardSystem';
+import { createEnemyPortrait } from '../assets/portraits';
 import type { BoardMoveResult, Direction, Position } from '../types/board';
 import type { CombatActionResult, CombatState } from '../types/combat';
 import { TileView } from '../ui/TileView';
@@ -22,9 +23,9 @@ interface BoardLayout {
 export class CombatScene extends Phaser.Scene {
   private combat!: CombatState;
   private boardLayout!: BoardLayout;
+  private backdropGraphics!: Phaser.GameObjects.Graphics;
   private boardGraphics!: Phaser.GameObjects.Graphics;
   private enemyContainer!: Phaser.GameObjects.Container;
-  private enemyBody!: Phaser.GameObjects.Graphics;
   private tileViews = new Map<string, TileView>();
   private selectingSkillId: string | null = null;
   private locked = false;
@@ -39,10 +40,9 @@ export class CombatScene extends Phaser.Scene {
     autoClearUi(this);
     this.cameras.main.setBackgroundColor('#080816');
     this.combat = gameStore.startCombat();
+    this.backdropGraphics = this.add.graphics().setDepth(0);
     this.boardGraphics = this.add.graphics().setDepth(1);
     this.enemyContainer = this.add.container(0, 0).setDepth(2);
-    this.enemyBody = this.add.graphics();
-    this.enemyContainer.add(this.enemyBody);
     this.buildEnemy();
     this.layout();
     this.renderBoardInstant();
@@ -214,7 +214,16 @@ export class CombatScene extends Phaser.Scene {
   private applyFeedback(result: CombatActionResult): void {
     result.floating.forEach((item) => {
       const center = this.cellCenter({ row: item.y, col: item.x });
-      const color = item.tone === 'damage' ? '#ffcc66' : item.tone === 'gold' ? '#facc15' : item.tone === 'energy' ? '#40f6d2' : '#ff4d8d';
+      const color =
+        item.tone === 'damage'
+          ? '#ffcc66'
+          : item.tone === 'gold'
+            ? '#facc15'
+            : item.tone === 'energy'
+              ? '#40f6d2'
+              : item.tone === 'heal'
+                ? '#a3e635'
+                : '#ff4d8d';
       AnimationSystem.floatingText(this, center.x, center.y, item.text, color);
     });
     if (result.damage > 0) {
@@ -223,6 +232,7 @@ export class CombatScene extends Phaser.Scene {
       this.flashEnemy();
       AudioSystem.play('damage');
     }
+    if (result.enemyAttacked) this.playEnemyAttack();
     if (result.playerDamaged > 0) {
       const center = this.cellCenter({ row: 0, col: 0 });
       AnimationSystem.floatingText(this, center.x - 44, center.y - 46, `-${result.playerDamaged}`, '#fb7185');
@@ -250,19 +260,38 @@ export class CombatScene extends Phaser.Scene {
     const width = this.scale.width;
     const height = this.scale.height;
     const isMobile = width < 760;
-    const size = Math.floor(Math.min(isMobile ? width * 0.92 : Math.min(width * 0.5, height * 0.66), 560));
-    const x = isMobile ? (width - size) / 2 : width * 0.34 - size / 2;
-    const y = isMobile ? Math.max(230, height * 0.5 - size / 2 + 30) : Math.max(170, height * 0.54 - size / 2);
+    const topReserve = isMobile ? (width < 560 ? 244 : 210) : 176;
+    const bottomReserve = isMobile ? 148 : 126;
+    const availableHeight = Math.max(280, height - topReserve - bottomReserve);
+    const sideReserve = isMobile ? 18 : 260;
+    const availableWidth = Math.max(300, width - sideReserve);
+    const size = Math.floor(Math.min(isMobile ? width * 0.92 : availableWidth * 0.58, availableHeight, 560));
+    const x = (width - size) / 2;
+    const y = topReserve + availableHeight / 2 - size / 2;
     const gap = Math.max(6, Math.floor(size * 0.018));
     const cell = (size - gap * 5) / 4;
     this.boardLayout = { x, y, size, cell, gap };
+    this.drawBackdrop();
     this.drawBoard();
 
-    const enemyX = isMobile ? width / 2 : width * 0.76;
-    const enemyY = isMobile ? Math.min(height - 95, y + size + 62) : height * 0.55;
+    const enemyX = width / 2;
+    const enemyY = isMobile ? 112 : 116;
     this.enemyContainer.setPosition(enemyX, enemyY);
-    this.enemyContainer.setScale(isMobile ? 0.62 : 1);
+    this.enemyContainer.setScale(this.enemyScale());
     this.syncBoardViews();
+  }
+
+  private drawBackdrop(): void {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    const actColor = this.combat.rank === 'boss' ? 0xff4d8d : this.combat.enemy.palette.primary;
+    this.backdropGraphics.clear();
+    this.backdropGraphics.fillStyle(0x080816, 1).fillRect(0, 0, width, height);
+    this.backdropGraphics.fillStyle(0xffffff, 0.025);
+    for (let x = 0; x < width; x += 28) this.backdropGraphics.fillRect(x, 0, 1, height);
+    for (let y = 0; y < height; y += 28) this.backdropGraphics.fillRect(0, y, width, 1);
+    this.backdropGraphics.fillStyle(actColor, 0.08).fillCircle(width / 2, 130, Math.min(width, 760) * 0.36);
+    this.backdropGraphics.fillStyle(0x000000, 0.28).fillRect(0, height - 150, width, 150);
   }
 
   private drawBoard(): void {
@@ -280,28 +309,8 @@ export class CombatScene extends Phaser.Scene {
   }
 
   private buildEnemy(): void {
-    const palette = this.combat.enemy.palette;
-    this.enemyBody.clear();
-    this.enemyBody.fillStyle(0x0d1126, 0.92).fillRoundedRect(-92, -116, 184, 232, 10);
-    this.enemyBody.lineStyle(3, palette.primary, 0.85).strokeRoundedRect(-92, -116, 184, 232, 10);
-    this.enemyBody.fillStyle(palette.secondary, 1).fillCircle(0, -18, 58);
-    this.enemyBody.fillStyle(palette.primary, 1).fillTriangle(-52, -62, -22, -98, -10, -54);
-    this.enemyBody.fillTriangle(52, -62, 22, -98, 10, -54);
-    this.enemyBody.fillStyle(palette.accent, 1).fillRect(-30, -30, 20, 14);
-    this.enemyBody.fillRect(10, -30, 20, 14);
-    this.enemyBody.fillStyle(0x080816, 1).fillRect(-28, -27, 14, 8);
-    this.enemyBody.fillRect(14, -27, 14, 8);
-    this.enemyBody.fillStyle(palette.primary, 0.8).fillRect(-42, 34, 84, 12);
-    const name = this.add
-      .text(0, 78, this.combat.enemy.name, {
-        fontFamily: 'Courier New, monospace',
-        fontSize: '16px',
-        color: '#f8fafc',
-        align: 'center',
-        wordWrap: { width: 150 }
-      })
-      .setOrigin(0.5);
-    this.enemyContainer.add(name);
+    this.enemyContainer.removeAll(true);
+    this.enemyContainer.add(createEnemyPortrait(this, this.combat.enemy));
     this.tweens.add({
       targets: this.enemyContainer,
       y: '+=8',
@@ -316,12 +325,18 @@ export class CombatScene extends Phaser.Scene {
     this.enemyContainer.setScale(0.2).setAlpha(0);
     this.tweens.add({
       targets: this.enemyContainer,
-      scale: this.scale.width < 760 ? 0.62 : 1,
+      scale: this.enemyScale(),
       alpha: 1,
       duration: AnimationSystem.duration(520),
       ease: 'Back.easeOut'
     });
     AnimationSystem.shake(this, 0.012, 260);
+  }
+
+  private enemyScale(): number {
+    if (this.scale.width < 560) return 0.46;
+    if (this.scale.width < 760) return 0.52;
+    return 0.64;
   }
 
   private renderBoardInstant(): void {
@@ -399,6 +414,25 @@ export class CombatScene extends Phaser.Scene {
       yoyo: true,
       duration: AnimationSystem.duration(70)
     });
+  }
+
+  private playEnemyAttack(): void {
+    const originX = this.enemyContainer.x;
+    const targetY = this.boardLayout.y + this.boardLayout.size * 0.2;
+    this.tweens.add({
+      targets: this.enemyContainer,
+      x: this.scale.width / 2 + (this.enemyContainer.x < this.scale.width / 2 ? 18 : -18),
+      y: targetY,
+      scale: this.enemyScale() * 1.08,
+      duration: AnimationSystem.duration(120),
+      yoyo: true,
+      ease: 'Quad.easeIn',
+      onComplete: () => {
+        this.enemyContainer.x = originX;
+        this.layout();
+      }
+    });
+    AnimationSystem.shake(this, 0.006, 120);
   }
 
   private wait(ms: number): Promise<void> {
