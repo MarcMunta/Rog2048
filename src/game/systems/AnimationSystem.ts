@@ -33,6 +33,37 @@ export class AnimationSystem {
     }
   }
 
+  static shockwave(scene: Phaser.Scene, x: number, y: number, color: number): void {
+    if (gameStore.profile.settings.reducedMotion) return;
+    const ring = scene.add.circle(x, y, 10).setStrokeStyle(3, color, 0.75).setDepth(58);
+    ring.setBlendMode(Phaser.BlendModes.ADD);
+    scene.tweens.add({
+      targets: ring,
+      radius: 72,
+      alpha: 0,
+      duration: this.duration(420),
+      ease: 'Cubic.easeOut',
+      onComplete: () => ring.destroy()
+    });
+  }
+
+  static mergeStreak(scene: Phaser.Scene, x: number, y: number, color: number): void {
+    if (gameStore.profile.settings.reducedMotion) return;
+    for (let i = 0; i < 4; i += 1) {
+      const streak = scene.add.rectangle(x, y, 46, 3, color, 0.78).setDepth(59);
+      streak.setBlendMode(Phaser.BlendModes.ADD);
+      streak.setAngle(i * 45);
+      scene.tweens.add({
+        targets: streak,
+        scaleX: 1.9,
+        alpha: 0,
+        duration: this.duration(260),
+        ease: 'Quad.easeOut',
+        onComplete: () => streak.destroy()
+      });
+    }
+  }
+
   static floatingText(scene: Phaser.Scene, x: number, y: number, text: string, color = '#ffffff'): void {
     const label = scene.add
       .text(x, y, text, {

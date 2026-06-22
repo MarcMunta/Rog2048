@@ -4,6 +4,7 @@ import { gameStore } from '../systems/GameStore';
 import { AudioSystem } from '../systems/AudioSystem';
 import { Random } from '../utils/random';
 import { bindClick, escapeHtml, setUi, showToast } from '../utils/dom';
+import { iconSvg } from '../assets/icons';
 import { autoClearUi, sceneBackground, transitionTo } from './sceneHelpers';
 
 export class EventScene extends Phaser.Scene {
@@ -22,14 +23,16 @@ export class EventScene extends Phaser.Scene {
     const event = new Random(run.seed + run.floor * 991).pick(EVENTS);
     const choices = event.choices
       .map(
-        (choice) => `<button class="event-choice" data-choice-id="${choice.id}">
+        (choice, index) => `<button class="event-choice" data-choice-id="${choice.id}">
+          <span class="choice-icon">${iconSvg(index === 0 ? 'eye' : index === 1 ? 'spark' : 'heart')}</span>
           <strong>${escapeHtml(choice.label)}</strong>
           <span>${escapeHtml(choice.description)}</span>
         </button>`
       )
       .join('');
-    const root = setUi(`<main class="screen">
-      <section class="screen-inner">
+    const root = setUi(`<main class="screen event-screen">
+      <section class="screen-inner event-shell">
+        <div class="scene-sigil" aria-hidden="true">?</div>
         <div class="top-actions">
           <div>
             <span class="eyebrow">Evento</span>

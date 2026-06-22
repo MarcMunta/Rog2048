@@ -5,6 +5,8 @@ import { AudioSystem } from '../systems/AudioSystem';
 import { bindClick, escapeHtml, setUi, showToast } from '../utils/dom';
 import { pixelButton } from '../ui/PixelButton';
 import { rarityLabel } from '../ui/RewardCard';
+import { iconSvg, relicIconSvg, skillIconSvg } from '../assets/icons';
+import type { ShopItemDefinition } from '../data/shops';
 import { autoClearUi, sceneBackground, transitionTo } from './sceneHelpers';
 
 export class ShopScene extends Phaser.Scene {
@@ -30,6 +32,7 @@ export class ShopScene extends Phaser.Scene {
       .map((item) => {
         const sold = Boolean(run.flags[EconomySystem.purchaseFlag(run, item.id)]);
         return `<article class="shop-card rarity-${item.rarity} ${sold ? 'sold' : ''}">
+          <span class="shop-icon">${shopIcon(item)}</span>
           <span class="card-rarity">${rarityLabel(item.rarity)}</span>
           <strong>${escapeHtml(item.title)}</strong>
           <span>${escapeHtml(item.description)}</span>
@@ -38,8 +41,9 @@ export class ShopScene extends Phaser.Scene {
         </article>`;
       })
       .join('');
-    const root = setUi(`<main class="screen">
-      <section class="screen-inner">
+    const root = setUi(`<main class="screen shop-screen">
+      <section class="screen-inner shop-shell">
+        <div class="scene-sigil" aria-hidden="true">$</div>
         <div class="top-actions">
           <div>
             <span class="eyebrow">Tienda</span>
@@ -65,4 +69,13 @@ export class ShopScene extends Phaser.Scene {
       transitionTo(this, 'MapScene');
     });
   }
+}
+
+function shopIcon(item: ShopItemDefinition): string {
+  if (item.type === 'relic' && item.refId) return relicIconSvg(item.refId, item.title);
+  if (item.type === 'skill' && item.refId) return skillIconSvg(item.refId, item.title);
+  if (item.type === 'heal') return iconSvg('hp', item.title);
+  if (item.type === 'maxHp') return iconSvg('heart', item.title);
+  if (item.type === 'upgrade') return iconSvg('spark', item.title);
+  return iconSvg('coin', item.title);
 }

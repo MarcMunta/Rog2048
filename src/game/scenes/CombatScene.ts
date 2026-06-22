@@ -193,7 +193,10 @@ export class CombatScene extends Phaser.Scene {
         duration: AnimationSystem.duration(170),
         ease: 'Back.easeOut'
       });
-      AnimationSystem.burst(this, center.x, center.y, merge.value >= 64 ? 0xffcc66 : 0x40f6d2);
+      const effectColor = merge.value >= 64 ? 0xffcc66 : 0x40f6d2;
+      AnimationSystem.burst(this, center.x, center.y, effectColor);
+      if (merge.value >= 64) AnimationSystem.shockwave(this, center.x, center.y, effectColor);
+      if (merge.value >= 128) AnimationSystem.mergeStreak(this, center.x, center.y, effectColor);
     }
 
     for (const spawn of move.spawns) {
@@ -241,6 +244,7 @@ export class CombatScene extends Phaser.Scene {
     if (result.combo >= 3) {
       const center = this.cellCenter({ row: 3, col: 3 });
       AnimationSystem.floatingText(this, center.x + 34, center.y + 42, `COMBO x${result.combo}`, '#40f6d2');
+      AnimationSystem.mergeStreak(this, center.x + 34, center.y + 42, 0x40f6d2);
     }
     if (result.bigHit) AnimationSystem.shake(this, 0.008, 160);
   }
@@ -274,8 +278,8 @@ export class CombatScene extends Phaser.Scene {
     this.drawBackdrop();
     this.drawBoard();
 
-    const enemyX = width / 2;
-    const enemyY = isMobile ? 112 : 116;
+    const enemyX = isMobile ? width / 2 : Math.max(250, width / 2 - 380);
+    const enemyY = isMobile ? (width < 560 ? 212 : 168) : 118;
     this.enemyContainer.setPosition(enemyX, enemyY);
     this.enemyContainer.setScale(this.enemyScale());
     this.syncBoardViews();
@@ -297,13 +301,16 @@ export class CombatScene extends Phaser.Scene {
   private drawBoard(): void {
     const { x, y, size, cell, gap } = this.boardLayout;
     this.boardGraphics.clear();
-    this.boardGraphics.fillStyle(0x0d1126, 0.88).fillRoundedRect(x, y, size, size, 12);
-    this.boardGraphics.lineStyle(2, 0x40f6d2, 0.18).strokeRoundedRect(x, y, size, size, 12);
+    this.boardGraphics.fillStyle(0x050712, 0.5).fillRoundedRect(x - 14, y - 14, size + 28, size + 28, 18);
+    this.boardGraphics.fillStyle(0x0d1126, 0.9).fillRoundedRect(x, y, size, size, 12);
+    this.boardGraphics.lineStyle(3, 0x40f6d2, 0.24).strokeRoundedRect(x, y, size, size, 12);
+    this.boardGraphics.lineStyle(1, 0xffcc66, 0.14).strokeRoundedRect(x + 8, y + 8, size - 16, size - 16, 7);
     for (let row = 0; row < 4; row += 1) {
       for (let col = 0; col < 4; col += 1) {
         const cx = x + gap + col * (cell + gap);
         const cy = y + gap + row * (cell + gap);
-        this.boardGraphics.fillStyle(0xffffff, 0.055).fillRoundedRect(cx, cy, cell, cell, 8);
+        this.boardGraphics.fillStyle(0xffffff, 0.052).fillRoundedRect(cx, cy, cell, cell, 8);
+        this.boardGraphics.lineStyle(1, 0xffffff, 0.045).strokeRoundedRect(cx + 3, cy + 3, cell - 6, cell - 6, 6);
       }
     }
   }
@@ -331,6 +338,7 @@ export class CombatScene extends Phaser.Scene {
       ease: 'Back.easeOut'
     });
     AnimationSystem.shake(this, 0.012, 260);
+    AnimationSystem.shockwave(this, this.scale.width / 2, 116, 0xff4d8d);
   }
 
   private enemyScale(): number {

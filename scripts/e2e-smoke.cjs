@@ -18,6 +18,7 @@ const url = process.env.E2E_URL ?? 'http://127.0.0.1:4173/';
   await page.locator('#new-run').click();
   await page.locator('.class-card').first().click();
   await page.locator('.map-node.available').first().click();
+  await page.locator('#enter-node').click();
   await page.waitForSelector('.combat-shell', { timeout: 10000 });
   await page.keyboard.press('ArrowLeft');
   await page.waitForTimeout(700);

@@ -20,8 +20,9 @@ export class RewardScene extends Phaser.Scene {
       return;
     }
     const cards = reward.choices.map(rewardCard).join('');
-    const root = setUi(`<main class="screen">
-      <section class="screen-inner">
+    const root = setUi(`<main class="screen reward-screen">
+      <section class="screen-inner reward-shell">
+        <div class="scene-sigil" aria-hidden="true">2048</div>
         <div class="top-actions">
           <div>
             <span class="eyebrow">Recompensa</span>
