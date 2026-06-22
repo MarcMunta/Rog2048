@@ -33,13 +33,14 @@ npm run test
 
 El proyecto usa `base: './'` en `vite.config.ts`, válido para GitHub Pages en repositorio o subruta.
 
-Workflow incluido: `.github/workflows/deploy-pages.yml`.
+Este repositorio está desplegado desde la rama `gh-pages`, carpeta `/`.
 
-Pasos:
+Para redesplegar:
 
-1. Sube este proyecto a GitHub.
-2. Activa Pages en el repositorio con fuente “GitHub Actions”.
-3. Haz push a `main` o ejecuta el workflow manualmente.
+```bash
+npm run build
+# publica el contenido de dist en la rama gh-pages
+```
 
 ## Extender contenido
 
