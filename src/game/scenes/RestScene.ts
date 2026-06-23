@@ -40,6 +40,7 @@ export class RestScene extends Phaser.Scene {
     bindClick(root, '.rest-card', (card) => {
       if (!gameStore.run) return;
       const action = card.dataset.action;
+      card.classList.add('is-selected');
       if (action === 'heal') {
         const amount = Math.ceil(gameStore.run.player.maxHp * 0.35);
         const before = gameStore.run.player.hp;
@@ -59,7 +60,7 @@ export class RestScene extends Phaser.Scene {
       }
       AudioSystem.play('reward');
       gameStore.completeNode();
-      transitionTo(this, 'MapScene');
+      this.time.delayedCall(160, () => transitionTo(this, 'MapScene'));
     });
     this.cameras.main.fadeIn(180, 8, 8, 22);
   }

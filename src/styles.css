@@ -2771,3 +2771,295 @@ canvas {
     min-height: 100%;
   }
 }
+
+/* v0.7 gameplay clarity pass */
+.combat-topbar {
+  grid-template-columns: minmax(150px, 1fr) minmax(118px, 160px) minmax(128px, 170px) minmax(140px, 1fr);
+}
+
+.intent-panel {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 3px 7px;
+  align-items: center;
+  padding: 7px 8px;
+  color: var(--cyan);
+  background:
+    linear-gradient(135deg, rgba(64, 246, 210, 0.13), transparent 54%),
+    rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(64, 246, 210, 0.26);
+  clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+}
+
+.intent-panel > span {
+  grid-row: span 2;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  background: rgba(64, 246, 210, 0.08);
+  border: 1px solid rgba(64, 246, 210, 0.22);
+}
+
+.intent-panel strong,
+.intent-panel small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.intent-panel strong {
+  color: var(--text);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.intent-panel small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.intent-panel.danger {
+  color: var(--danger);
+  border-color: rgba(251, 113, 133, 0.44);
+  background:
+    linear-gradient(135deg, rgba(251, 113, 133, 0.16), transparent 54%),
+    rgba(255, 255, 255, 0.045);
+  animation: intent-warning 1.1s steps(2, end) infinite;
+}
+
+.skill-button.is-disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+  filter: saturate(0.55);
+}
+
+.skill-button.is-disabled:hover {
+  transform: none;
+  border-color: rgba(251, 113, 133, 0.34);
+  background: rgba(251, 113, 133, 0.055);
+}
+
+.combat-tutorial {
+  position: fixed;
+  left: 50%;
+  bottom: 112px;
+  z-index: 24;
+  width: min(560px, calc(100vw - 28px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 0 0, rgba(255, 204, 102, 0.18), transparent 44%),
+    rgba(5, 7, 18, 0.94);
+  border: 1px solid rgba(255, 204, 102, 0.38);
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.46),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  transform: translateX(-50%);
+  clip-path: polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px));
+  pointer-events: auto;
+  animation: tutorial-in 280ms ease both;
+}
+
+.combat-tutorial strong {
+  display: block;
+  margin: 3px 0;
+  color: var(--gold);
+}
+
+.combat-tutorial p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.tutorial-close {
+  min-height: 38px;
+  padding: 8px 12px;
+  color: var(--bg);
+  background: var(--gold);
+  border: 0;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.reward-card.is-selected,
+.shop-card.is-selected,
+.event-choice.is-selected,
+.rest-card.is-selected {
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 1px rgba(255, 204, 102, 0.34),
+    0 0 34px rgba(255, 204, 102, 0.22);
+  transform: translateY(-3px) scale(1.015);
+}
+
+.enemy-mini {
+  width: 58px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  color: var(--enemy-color, var(--cyan));
+  background:
+    radial-gradient(circle at 50% 34%, color-mix(in srgb, var(--enemy-color, var(--cyan)) 32%, transparent), transparent 48%),
+    rgba(255, 255, 255, 0.045);
+  border: 1px solid color-mix(in srgb, var(--enemy-color, var(--cyan)) 46%, transparent);
+  clip-path: polygon(50% 0, 92% 22%, 100% 72%, 50% 100%, 0 72%, 8% 22%);
+  font-size: 28px;
+  text-shadow: 0 0 14px currentColor;
+}
+
+.enemy-mini.locked {
+  color: rgba(167, 176, 196, 0.42);
+  filter: grayscale(1);
+}
+
+@keyframes intent-warning {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 1px rgba(251, 113, 133, 0.04);
+  }
+  50% {
+    box-shadow: inset 0 0 0 1px rgba(251, 113, 133, 0.28), 0 0 16px rgba(251, 113, 133, 0.18);
+  }
+}
+
+@keyframes tutorial-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@media (max-width: 760px) {
+  .combat-topbar {
+    grid-template-columns: 1fr 116px;
+  }
+
+  .enemy-vitals,
+  .intent-panel {
+    grid-column: auto;
+  }
+
+  .status-row {
+    display: none;
+  }
+
+  .combat-tutorial {
+    bottom: 104px;
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intent-panel.danger,
+  .combat-tutorial {
+    animation: none;
+  }
+}
+
+/* v0.8 visual smoke fixes */
+.skill-dock {
+  background:
+    linear-gradient(135deg, rgba(64, 246, 210, 0.16), transparent 34%),
+    rgba(5, 7, 18, 0.94);
+  border-color: rgba(64, 246, 210, 0.3);
+}
+
+.skill-dock .skill-button {
+  color: #f8fafc;
+  background:
+    linear-gradient(180deg, rgba(64, 246, 210, 0.12), rgba(255, 255, 255, 0.055)),
+    rgba(12, 16, 34, 0.98);
+}
+
+.skill-dock .skill-copy strong {
+  color: #f8fafc;
+}
+
+.skill-dock .skill-copy small {
+  color: #c7d2fe;
+}
+
+@media (max-width: 760px) {
+  .map-board {
+    background:
+      radial-gradient(circle at 50% 8%, rgba(64, 246, 210, 0.18), transparent 28%),
+      radial-gradient(circle at 50% 90%, rgba(255, 77, 141, 0.14), transparent 32%),
+      linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      rgba(5, 7, 18, 0.9);
+  }
+
+  .map-layers {
+    min-height: 820px;
+    grid-template-columns: repeat(3, minmax(104px, 1fr));
+    grid-template-rows: repeat(6, 124px);
+    gap: 10px 4px;
+    align-items: center;
+  }
+
+  .map-node {
+    width: min(116px, 31vw);
+    height: 100px;
+    padding: 10px 6px 8px;
+  }
+
+  .map-node.available,
+  .map-node.selected {
+    width: min(136px, 38vw);
+    height: 112px;
+    z-index: 9;
+  }
+
+  .map-node-boss {
+    width: min(150px, 42vw);
+    height: 126px;
+  }
+
+  .node-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .node-icon .game-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .node-title {
+    font-size: 12px;
+  }
+
+  .node-status {
+    font-size: 10px;
+  }
+
+  .mobile-spine {
+    top: 42px;
+    bottom: 128px;
+    width: 5px;
+  }
+
+  .map-detail {
+    background:
+      radial-gradient(circle at 0 0, rgba(64, 246, 210, 0.22), transparent 44%),
+      rgba(6, 8, 20, 0.97);
+    border-color: rgba(64, 246, 210, 0.42);
+  }
+
+  .map-detail p {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+}

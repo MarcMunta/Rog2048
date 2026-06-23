@@ -32,7 +32,9 @@ export class ShopScene extends Phaser.Scene {
       .map((item) => {
         const sold = Boolean(run.flags[EconomySystem.purchaseFlag(run, item.id)]);
         const unaffordable = !sold && run.player.gold < item.price;
-        return `<article class="shop-card rarity-${item.rarity} ${sold ? 'sold' : ''} ${unaffordable ? 'unaffordable' : ''}">
+        return `<article class="shop-card rarity-${item.rarity} ${sold ? 'sold' : ''} ${
+          unaffordable ? 'unaffordable' : ''
+        }" data-item-id="${item.id}">
           <span class="shop-icon">${shopIcon(item)}</span>
           <span class="card-rarity">${rarityLabel(item.rarity)}</span>
           <strong>${escapeHtml(item.title)}</strong>
@@ -61,11 +63,22 @@ export class ShopScene extends Phaser.Scene {
       if (button.hasAttribute('disabled')) return;
       const item = offers.find((offer) => offer.id === button.dataset.item);
       if (!item) return;
-      const outcome = EconomySystem.purchase(run, item);
-      showToast(outcome.message, outcome.ok ? 'good' : 'bad');
-      AudioSystem.play(outcome.ok ? 'reward' : 'damage');
-      gameStore.save();
-      this.render();
+      button.setAttribute('disabled', 'disabled');
+      button.closest<HTMLElement>('.shop-card')?.classList.add('is-selected');
+      this.time.delayedCall(150, () => {
+        const outcome = EconomySystem.purchase(run, item);
+        showToast(outcome.message, outcome.ok ? 'good' : 'bad');
+        AudioSystem.play(outcome.ok ? 'reward' : 'damage');
+        gameStore.save();
+        this.render();
+      });
+    });
+    bindClick(root, '.shop-card.unaffordable', () => {
+      showToast('Oro insuficiente.', 'bad');
+      AudioSystem.play('damage');
+    });
+    bindClick(root, '.shop-card.sold', () => {
+      showToast('Ya comprado.', 'neutral');
     });
     bindClick(root, '#leave-shop', () => {
       gameStore.completeNode();

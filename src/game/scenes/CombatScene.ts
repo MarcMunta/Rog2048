@@ -4,6 +4,7 @@ import { AnimationSystem } from '../systems/AnimationSystem';
 import { AudioSystem } from '../systems/AudioSystem';
 import { gameStore } from '../systems/GameStore';
 import { BoardSystem } from '../systems/BoardSystem';
+import { CombatVfxSystem } from '../systems/CombatVfxSystem';
 import { createEnemyPortrait, playEnemyPortraitAnimation } from '../assets/portraits';
 import type { BoardMoveResult, Direction, Position } from '../types/board';
 import type { CombatActionResult, CombatState } from '../types/combat';
@@ -109,10 +110,20 @@ export class CombatScene extends Phaser.Scene {
   private refreshHud(): void {
     const run = gameStore.run;
     if (!run) return;
-    const root = setUi(combatHud(run, this.combat, this.selectingSkillId));
+    const root = setUi(combatHud(run, this.combat, this.selectingSkillId, !gameStore.profile.tutorial.combatBasics));
+    bindClick(root, '#dismiss-combat-tutorial', () => {
+      gameStore.profile.tutorial.combatBasics = true;
+      gameStore.saveProfileOnly();
+      this.refreshHud();
+    });
     bindClick(root, '.skill-button', (button) => {
       const skillId = button.dataset.skillId;
       if (!skillId || this.locked || this.combat.status !== 'active') return;
+      if (button.getAttribute('aria-disabled') === 'true') {
+        showToast(button.dataset.disabledReason || 'No disponible.', 'bad');
+        AudioSystem.play('damage');
+        return;
+      }
       const skill = getSkillById(skillId);
       AudioSystem.play('button');
       if (skill.targetMode === 'tile') {
@@ -217,6 +228,7 @@ export class CombatScene extends Phaser.Scene {
   }
 
   private applyFeedback(result: CombatActionResult): void {
+    if (result.usedSkillId) this.playSkillVfx(result.usedSkillId);
     result.floating.forEach((item) => {
       const center = this.floatingPoint(item);
       const color =
@@ -258,6 +270,18 @@ export class CombatScene extends Phaser.Scene {
       AnimationSystem.hitStop(this, 80);
       AnimationSystem.shake(this, 0.008, 160);
     }
+  }
+
+  private playSkillVfx(skillId: string): void {
+    const center = this.boardCenter();
+    const enemy = this.enemyContainer.getBounds();
+    const player = this.floatingPoint({ text: '', x: 0, y: 0, tone: 'heal', anchor: 'player' });
+    CombatVfxSystem.playSkill(this, skillId, {
+      board: center,
+      player,
+      enemy: { x: enemy.centerX, y: enemy.centerY },
+      enemyColor: this.combat.enemy.palette.primary
+    });
   }
 
   private floatingPoint(item: CombatActionResult['floating'][number]): { x: number; y: number } {

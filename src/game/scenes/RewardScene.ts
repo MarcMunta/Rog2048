@@ -38,8 +38,14 @@ export class RewardScene extends Phaser.Scene {
       const choice = reward.choices.find((item) => item.id === card.dataset.choiceId);
       if (!choice) return;
       AudioSystem.play('reward');
-      const next = gameStore.claimReward(choice);
-      transitionTo(this, next === 'victory' ? 'VictoryScene' : 'MapScene');
+      card.classList.add('is-selected');
+      root.querySelectorAll<HTMLElement>('.reward-card').forEach((item) => {
+        if (item !== card) item.style.opacity = '0.45';
+      });
+      this.time.delayedCall(190, () => {
+        const next = gameStore.claimReward(choice);
+        transitionTo(this, next === 'victory' ? 'VictoryScene' : 'MapScene');
+      });
     });
     this.cameras.main.fadeIn(180, 8, 8, 22);
   }

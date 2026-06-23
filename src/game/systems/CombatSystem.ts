@@ -52,6 +52,8 @@ export class CombatSystem {
       exactDuplicated: false,
       delayedDamageBonus: 0,
       eightMergeCounter: 0,
+      bossPhase: 1,
+      bossPhaseTriggered: [],
       statusEffects: {
         enemyBurn: 0,
         empowered: 0,
@@ -131,10 +133,20 @@ export class CombatSystem {
     const operation = SkillSystem.use(this.run, this.state, skillId, this.rng, target);
     if (!operation.ok) return { ...result, ok: false, reason: operation.reason };
 
+    result.usedSkillId = skillId;
     result.move = operation.move;
     result.logs.push(...operation.logs);
     result.playerDamaged += operation.paidHp;
     result.energyGained += operation.energyGained;
+    if ((operation.shieldGained ?? 0) > 0) {
+      result.shieldGained += operation.shieldGained ?? 0;
+      CombatFeedbackSystem.shield(result, operation.shieldGained ?? 0);
+    }
+    if ((operation.directDamage ?? 0) > 0) {
+      result.damage += operation.directDamage ?? 0;
+      this.applyDamageToEnemy(operation.directDamage ?? 0, result);
+      result.bigHit ||= (operation.directDamage ?? 0) >= 18;
+    }
     operation.spawns.forEach((spawn) => {
       result.move ??= {
         moved: true,
@@ -210,10 +222,38 @@ export class CombatSystem {
     this.state.enemy.hp = clamp(this.state.enemy.hp - damage, 0, this.state.enemy.maxHp);
     this.run.stats.damage += damage;
     RelicSystem.afterEnemyDamage(this.run, this.state, hpBefore, damage, result);
+    this.applyBossPhasePressure(result);
     if (this.state.enemy.hp <= 0) {
       this.state.status = 'won';
       CombatFeedbackSystem.log(result, `${this.state.enemy.name} cae.`);
     }
+  }
+
+  private applyBossPhasePressure(result: CombatActionResult): void {
+    if (this.state.rank !== 'boss' || this.state.enemy.hp <= 0 || this.state.status !== 'active') return;
+    const hpRatio = this.state.enemy.hp / this.state.enemy.maxHp;
+    const nextPhase = hpRatio <= 0.33 ? 3 : hpRatio <= 0.66 ? 2 : 1;
+    if (nextPhase <= this.state.bossPhase || this.state.bossPhaseTriggered.includes(nextPhase)) return;
+
+    this.state.bossPhase = nextPhase;
+    this.state.bossPhaseTriggered.push(nextPhase);
+    this.state.enemy.attackDamage += nextPhase;
+    this.state.enemy.attackTimer = Math.max(1, this.state.enemy.attackTimer - 1);
+    EnemySystem.rerollTarget(this.state.enemy, this.rng);
+
+    if (nextPhase >= 2) BoardSystem.lockRandomTile(this.state.board, this.rng, 2);
+    if (nextPhase >= 3) BoardSystem.curseRandomTile(this.state.board, this.rng);
+
+    result.bossPhaseChanged = nextPhase;
+    result.bigHit = true;
+    CombatFeedbackSystem.floating(result, {
+      text: `Fase ${nextPhase}`,
+      x: 0,
+      y: 0,
+      tone: 'status',
+      anchor: 'enemy'
+    });
+    CombatFeedbackSystem.log(result, `${this.state.enemy.name} entra en fase ${nextPhase}.`);
   }
 
   private applyBurnDamage(result: CombatActionResult): void {

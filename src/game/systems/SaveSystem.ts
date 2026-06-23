@@ -74,6 +74,7 @@ export class SaveSystem {
       version: 1,
       settings: { ...DEFAULT_SETTINGS },
       stats: { ...DEFAULT_STATS },
+      tutorial: { combatBasics: false },
       discoveredRelics: ['silverAbacus', 'forgeHammer', 'blackLotus', 'starAtlas'],
       discoveredEnemies: [],
       discoveredClasses: ['accountant', 'forger', 'heretic', 'oracle']
@@ -85,6 +86,7 @@ export class SaveSystem {
       version: 1,
       settings: { ...DEFAULT_SETTINGS, ...(profile.settings ?? {}) },
       stats: { ...DEFAULT_STATS, ...(profile.stats ?? {}) },
+      tutorial: { combatBasics: false, ...(profile.tutorial ?? {}) },
       discoveredRelics: profile.discoveredRelics ?? [],
       discoveredEnemies: profile.discoveredEnemies ?? [],
       discoveredClasses: profile.discoveredClasses ?? ['accountant', 'forger']

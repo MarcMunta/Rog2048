@@ -11,34 +11,44 @@ export class EconomySystem {
     const count = 4 + RelicSystem.getShopOfferBonus(run);
     const rng = new Random(run.seed + run.floor * 733);
     const dynamic: ShopItemDefinition[] = [];
+    const upgrades = SHOP_UPGRADES.filter((item) => {
+      if (item.type === 'relic' && item.refId) return !run.relicIds.includes(item.refId);
+      if (item.type === 'skill' && item.refId) return !run.skillIds.includes(item.refId);
+      return true;
+    }).map((item) => ({
+      ...item,
+      price: RelicSystem.getShopPrice(run, item.price)
+    }));
+    const reservedRelics = new Set(upgrades.filter((item) => item.type === 'relic').map((item) => item.refId));
+    const reservedSkills = new Set(upgrades.filter((item) => item.type === 'skill').map((item) => item.refId));
 
-    const relics = rng.shuffle(RELICS.filter((relic) => !run.relicIds.includes(relic.id))).slice(0, 3);
+    const relics = rng.shuffle(RELICS.filter((relic) => !run.relicIds.includes(relic.id) && !reservedRelics.has(relic.id))).slice(0, 3);
     relics.forEach((relic) => {
       dynamic.push({
         id: `shop-relic-${relic.id}`,
         type: 'relic',
         title: relic.name,
         description: relic.description,
-        price: itemPrice(relic.rarity, 'relic'),
+        price: RelicSystem.getShopPrice(run, itemPrice(relic.rarity, 'relic')),
         rarity: relic.rarity,
         refId: relic.id
       });
     });
 
-    const skills = rng.shuffle(SKILLS.filter((skill) => !run.skillIds.includes(skill.id))).slice(0, 2);
+    const skills = rng.shuffle(SKILLS.filter((skill) => !run.skillIds.includes(skill.id) && !reservedSkills.has(skill.id))).slice(0, 2);
     skills.forEach((skill) => {
       dynamic.push({
         id: `shop-skill-${skill.id}`,
         type: 'skill',
         title: skill.name,
         description: skill.description,
-        price: itemPrice(skill.rarity, 'skill'),
+        price: RelicSystem.getShopPrice(run, itemPrice(skill.rarity, 'skill')),
         rarity: skill.rarity,
         refId: skill.id
       });
     });
 
-    return rng.shuffle([...SHOP_UPGRADES, ...dynamic]).slice(0, count);
+    return rng.shuffle([...upgrades, ...dynamic]).slice(0, count);
   }
 
   static purchase(run: RunState, item: ShopItemDefinition): { ok: boolean; message: string } {

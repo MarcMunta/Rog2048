@@ -18,6 +18,8 @@ export interface SkillOperationResult {
   logs: string[];
   paidHp: number;
   energyGained: number;
+  shieldGained?: number;
+  directDamage?: number;
 }
 
 export class SkillSystem {
@@ -65,6 +67,8 @@ export class SkillSystem {
     let move: BoardMoveResult | undefined;
     let paidHp = 0;
     let energyGained = 0;
+    let shieldGained = 0;
+    let directDamage = 0;
     const refundAndFail = (reason: string): SkillOperationResult => {
       combat.player.energy = clamp(combat.player.energy + cost, 0, combat.player.maxEnergy);
       return this.failed(skill, reason);
@@ -101,6 +105,24 @@ export class SkillSystem {
       logs.push('Ficha congelada.');
     }
 
+    if (skill.effect === 'guard') {
+      shieldGained = 5 + (run.skillUpgrades[skillId] ?? 0) * 2 + RelicSystem.getGuardShieldBonus(run);
+      combat.player.shield += shieldGained;
+      logs.push(`Guardia: +${shieldGained} escudo.`);
+    }
+
+    if (skill.effect === 'transmute' && target) {
+      const tile = BoardSystem.transmuteTileToPreview(combat.board, target, rng, RelicSystem.getSpawnOptions(run, combat));
+      if (!tile) return refundAndFail('No se puede transmutar esa ficha.');
+      logs.push(`Ficha transmutada a ${tile.value}.`);
+    }
+
+    if (skill.effect === 'execute') {
+      const lowHp = combat.enemy.hp / combat.enemy.maxHp <= 0.3;
+      directDamage = Math.ceil(combat.enemy.maxHp * (lowHp ? 0.18 : 0.06)) + (run.skillUpgrades[skillId] ?? 0) * 3;
+      logs.push(lowHp ? `Sentencia: ${directDamage} daÃ±o directo.` : `Sentencia marca ${directDamage} daÃ±o.`);
+    }
+
     if (skill.effect === 'rerollTarget') {
       EnemySystem.rerollTarget(combat.enemy, rng);
       combat.player.energy = clamp(combat.player.energy + 1, 0, combat.player.maxEnergy);
@@ -132,7 +154,9 @@ export class SkillSystem {
       spawns,
       logs,
       paidHp,
-      energyGained
+      energyGained,
+      shieldGained,
+      directDamage
     };
   }
 

@@ -52,6 +52,36 @@ export const SKILLS: SkillDefinition[] = [
     effect: 'freeze'
   },
   {
+    id: 'guard',
+    name: 'Guardia',
+    rarity: 'common',
+    description: 'Gana escudo inmediato y aguanta el proximo golpe.',
+    cost: 1,
+    cooldown: 2,
+    targetMode: 'none',
+    effect: 'guard'
+  },
+  {
+    id: 'transmute',
+    name: 'Transmutar',
+    rarity: 'rare',
+    description: 'Cambia una ficha por la proxima aparicion prevista.',
+    cost: 2,
+    cooldown: 3,
+    targetMode: 'tile',
+    effect: 'transmute'
+  },
+  {
+    id: 'execute',
+    name: 'Sentencia',
+    rarity: 'epic',
+    description: 'Golpe directo. Hace mucho mas dano si el enemigo esta bajo 30% vida.',
+    cost: 3,
+    cooldown: 5,
+    targetMode: 'none',
+    effect: 'execute'
+  },
+  {
     id: 'rerollTarget',
     name: 'Recalcular',
     rarity: 'common',

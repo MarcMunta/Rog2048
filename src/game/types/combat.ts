@@ -24,6 +24,7 @@ export interface FloatingTextEvent {
 export interface CombatActionResult {
   ok: boolean;
   reason?: string;
+  usedSkillId?: string;
   move?: BoardMoveResult;
   damage: number;
   healed: number;
@@ -36,6 +37,7 @@ export interface CombatActionResult {
   enemyAttacked: boolean;
   playerDamaged: number;
   bigHit: boolean;
+  bossPhaseChanged?: number;
   logs: string[];
   floating: FloatingTextEvent[];
 }
@@ -68,6 +70,8 @@ export interface CombatState {
   exactDuplicated: boolean;
   delayedDamageBonus: number;
   eightMergeCounter: number;
+  bossPhase: number;
+  bossPhaseTriggered: number[];
   statusEffects: CombatStatusEffects;
   skillStates: SkillState[];
   recentLogs: string[];

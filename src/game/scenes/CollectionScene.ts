@@ -4,6 +4,7 @@ import { ALL_ENEMIES } from '../data/enemies';
 import { BOSSES } from '../data/bosses';
 import { RELICS } from '../data/relics';
 import { gameStore } from '../systems/GameStore';
+import { ENEMY_VISUALS } from '../assets/portraits';
 import { iconSvg, relicIconSvg } from '../assets/icons';
 import { bindClick, escapeHtml, setUi } from '../utils/dom';
 import { pixelButton } from '../ui/PixelButton';
@@ -39,7 +40,11 @@ export class CollectionScene extends Phaser.Scene {
     const enemies = [...ALL_ENEMIES, ...BOSSES]
       .map((enemy) => {
         const known = profile.discoveredEnemies.includes(enemy.id);
+        const visual = ENEMY_VISUALS[enemy.id];
         return `<article class="collection-card">
+          <span class="enemy-mini ${known ? '' : 'locked'}" style="--enemy-color:${hex(enemy.palette.primary)}">${
+            known ? escapeHtml(visual?.glyph ?? enemy.name.slice(0, 1)) : '?'
+          }</span>
           <strong>${known ? escapeHtml(enemy.name) : '???'}</strong>
           <span>${known ? escapeHtml(enemy.ruleText) : 'Aún no visto.'}</span>
         </article>`;
@@ -66,4 +71,8 @@ export class CollectionScene extends Phaser.Scene {
     bindClick(root, '#back', () => transitionTo(this, 'MainMenuScene'));
     this.cameras.main.fadeIn(180, 8, 8, 22);
   }
+}
+
+function hex(value: number): string {
+  return `#${value.toString(16).padStart(6, '0')}`;
 }

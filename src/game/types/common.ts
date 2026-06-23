@@ -26,10 +26,15 @@ export interface RunStats {
   goldEarned: number;
 }
 
+export interface TutorialState {
+  combatBasics: boolean;
+}
+
 export interface ProfileState {
   version: number;
   settings: SettingsState;
   stats: RunStats;
+  tutorial: TutorialState;
   discoveredRelics: string[];
   discoveredEnemies: string[];
   discoveredClasses: string[];

@@ -168,6 +168,38 @@ export const RELICS: RelicDefinition[] = [
     rarity: 'legendary',
     description: 'Combo 4+ quema al enemigo durante 2 turnos.',
     effect: 'comboBurn'
+  },
+  {
+    id: 'chainWard',
+    name: 'Cadena de Guardia',
+    rarity: 'uncommon',
+    description: 'Con combo 4+ ganas 1 escudo al final del movimiento.',
+    effect: 'comboShield',
+    value: 1
+  },
+  {
+    id: 'amberBulwark',
+    name: 'Baluarte Ambar',
+    rarity: 'rare',
+    description: 'Guardia gana +3 escudo adicional.',
+    effect: 'guardBoost',
+    value: 3
+  },
+  {
+    id: 'marketRune',
+    name: 'Runa de Mercado',
+    rarity: 'rare',
+    description: 'Los precios de tienda bajan un 15%.',
+    effect: 'shopDiscount',
+    value: 15
+  },
+  {
+    id: 'bossPact',
+    name: 'Pacto del Jefe',
+    rarity: 'legendary',
+    description: 'Los golpes exactos contra jefes dan +1 energia, pero aceleran su ataque.',
+    effect: 'bossExactEnergy',
+    value: 1
   }
 ];
 

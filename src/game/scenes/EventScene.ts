@@ -48,11 +48,15 @@ export class EventScene extends Phaser.Scene {
     bindClick(root, '.event-choice', (button) => {
       const choice = event.choices.find((item) => item.id === button.dataset.choiceId);
       if (!choice || !gameStore.run) return;
-      const message = choice.apply(gameStore.run);
-      showToast(message, 'neutral');
       AudioSystem.play('reward');
-      gameStore.completeNode();
-      transitionTo(this, 'MapScene');
+      button.classList.add('is-selected');
+      this.time.delayedCall(190, () => {
+        if (!gameStore.run) return;
+        const message = choice.apply(gameStore.run);
+        showToast(message, 'neutral');
+        gameStore.completeNode();
+        transitionTo(this, 'MapScene');
+      });
     });
     this.cameras.main.fadeIn(180, 8, 8, 22);
   }

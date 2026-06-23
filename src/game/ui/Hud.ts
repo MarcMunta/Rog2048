@@ -7,7 +7,7 @@ import type { RunState } from '../types/run';
 import { escapeHtml } from '../utils/dom';
 import { tooltip } from './Tooltip';
 
-export function combatHud(run: RunState, combat: CombatState, selectingSkillId: string | null): string {
+export function combatHud(run: RunState, combat: CombatState, selectingSkillId: string | null, showTutorial = false): string {
   const enemyHp = Math.ceil((combat.enemy.hp / combat.enemy.maxHp) * 100);
   const playerHp = Math.ceil((combat.player.hp / combat.player.maxHp) * 100);
   const skills = run.skillIds.map((skillId) => skillButton(run, combat, skillId, selectingSkillId)).join('');
@@ -27,6 +27,7 @@ export function combatHud(run: RunState, combat: CombatState, selectingSkillId: 
       : ''
   ].join('');
   const preview = combat.board.spawnPreview.map((value) => `<i>${value}</i>`).join('');
+  const intent = enemyIntent(combat);
   const logs = combat.recentLogs.length
     ? combat.recentLogs.map((line) => `<span>${escapeHtml(line)}</span>`).join('')
     : '<span>Sin eventos recientes.</span>';
@@ -42,6 +43,11 @@ export function combatHud(run: RunState, combat: CombatState, selectingSkillId: 
         <span>OBJ</span>
         <strong>${combat.enemy.currentTarget}</strong>
         <small>${escapeHtml(combat.enemy.ruleText)}</small>
+      </div>
+      <div class="intent-panel ${intent.danger ? 'danger' : ''}">
+        <span>${intent.icon}</span>
+        <strong>${escapeHtml(intent.label)}</strong>
+        <small>${escapeHtml(intent.detail)}</small>
       </div>
       <div class="enemy-vitals">
         <span>${combat.enemy.hp}/${combat.enemy.maxHp}</span>
@@ -81,6 +87,7 @@ export function combatHud(run: RunState, combat: CombatState, selectingSkillId: 
       <div class="dock-title">Habilidades</div>
       <div class="skill-row">${skills}</div>
     </footer>
+    ${showTutorial ? combatTutorial() : ''}
     ${
       selectingSkillId
         ? `<div class="selection-banner">Elige una ficha para ${escapeHtml(getSkillById(selectingSkillId).name)} · Esc cancela</div>`
@@ -94,14 +101,77 @@ function skillButton(run: RunState, combat: CombatState, skillId: string, select
   const state = combat.skillStates.find((item) => item.id === skillId);
   const cost = SkillSystem.getCost(run, combat, skillId);
   const disabled = (state?.cooldownLeft ?? 0) > 0 || combat.player.energy < cost || combat.status !== 'active';
+  const reason =
+    combat.status !== 'active'
+      ? 'El combate ya termino.'
+      : (state?.cooldownLeft ?? 0) > 0
+        ? `Recarga: ${state?.cooldownLeft ?? 0} turno(s).`
+        : combat.player.energy < cost
+          ? 'Energia insuficiente.'
+          : '';
   const label = state && state.cooldownLeft > 0 ? `${state.cooldownLeft}` : `${cost}E`;
-  return `<button class="skill-button rarity-${skill.rarity} ${selectingSkillId === skill.id ? 'selecting' : ''}" data-skill-id="${skill.id}" ${
-    disabled ? 'disabled' : ''
-  } ${tooltip(skill.description)}>
+  return `<button class="skill-button rarity-${skill.rarity} ${selectingSkillId === skill.id ? 'selecting' : ''} ${
+    disabled ? 'is-disabled' : ''
+  }" data-skill-id="${skill.id}" data-disabled-reason="${escapeHtml(reason)}" aria-disabled="${disabled ? 'true' : 'false'}" ${tooltip(
+    disabled && reason ? `${skill.description} ${reason}` : skill.description
+  )}>
     <span class="skill-icon">${skillIconSvg(skill.id, skill.name)}</span>
     <span class="skill-copy"><strong>${escapeHtml(skill.name)}</strong><small>${shortSkillText(skill.description)}</small></span>
     <span class="skill-cost">${label}</span>
   </button>`;
+}
+
+function enemyIntent(combat: CombatState): { icon: string; label: string; detail: string; danger: boolean } {
+  if (combat.enemy.attackTimer <= 1) {
+    return {
+      icon: iconSvg('blade'),
+      label: 'Ataque listo',
+      detail: `${combat.enemy.attackDamage} dano entrante`,
+      danger: true
+    };
+  }
+
+  const timed = combat.enemy.behaviors
+    .filter((behavior) => behavior.every)
+    .map((behavior) => ({
+      type: behavior.type,
+      remaining: (behavior.every ?? 1) - (combat.enemy.specialCounter % (behavior.every ?? 1))
+    }))
+    .sort((a, b) => a.remaining - b.remaining)[0];
+
+  if (timed && timed.remaining <= combat.enemy.attackTimer) {
+    const labels: Record<string, { icon: string; label: string }> = {
+      mirrorTarget: { icon: iconSvg('reroll'), label: 'Muta objetivo' },
+      lockTile: { icon: iconSvg('locked'), label: 'Bloquea ficha' },
+      curseValue: { icon: iconSvg('cursed'), label: 'Maldice ficha' },
+      bossEntropy: { icon: iconSvg('ember'), label: 'Entropia' }
+    };
+    const item = labels[timed.type] ?? { icon: iconSvg('eye'), label: 'Ritual' };
+    return {
+      icon: item.icon,
+      label: item.label,
+      detail: `En ${timed.remaining} turno(s)`,
+      danger: timed.remaining <= 1
+    };
+  }
+
+  return {
+    icon: iconSvg('eye'),
+    label: combat.rank === 'boss' ? `Fase ${combat.bossPhase}` : 'Acecha',
+    detail: `Ataca en ${combat.enemy.attackTimer}`,
+    danger: false
+  };
+}
+
+function combatTutorial(): string {
+  return `<aside class="combat-tutorial" role="dialog" aria-label="Guia rapida">
+    <div>
+      <span class="eyebrow">Guia rapida</span>
+      <strong>Juega al numero objetivo</strong>
+      <p>Desliza fichas, fusiona el objetivo, usa habilidades con energia y vigila el contador enemigo.</p>
+    </div>
+    <button class="tutorial-close" id="dismiss-combat-tutorial">Entendido</button>
+  </aside>`;
 }
 
 function shortSkillText(description: string): string {

@@ -106,7 +106,11 @@ const RELIC_ICONS: Record<string, IconId> = {
   starAtlas: 'star',
   emberMandate: 'ember',
   eightGate: 'gate',
-  firstSpark: 'spark'
+  firstSpark: 'spark',
+  chainWard: 'combo',
+  amberBulwark: 'shield',
+  marketRune: 'coin',
+  bossPact: 'key'
 };
 
 const SKILL_ICONS: Record<string, IconId> = {
@@ -115,6 +119,9 @@ const SKILL_ICONS: Record<string, IconId> = {
   purge: 'purge',
   duplicate: 'duplicate',
   freeze: 'freeze',
+  guard: 'shield',
+  transmute: 'prism',
+  execute: 'blade',
   rerollTarget: 'reroll',
   bloodMerge: 'blood',
   oraclePreview: 'oracle'

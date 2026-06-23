@@ -10,7 +10,10 @@ export type SkillEffectType =
   | 'freeze'
   | 'rerollTarget'
   | 'bloodMerge'
-  | 'oraclePreview';
+  | 'oraclePreview'
+  | 'guard'
+  | 'transmute'
+  | 'execute';
 
 export interface SkillDefinition {
   id: string;

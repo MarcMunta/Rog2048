@@ -321,6 +321,16 @@ export class BoardSystem {
     return tile;
   }
 
+  static transmuteTileToPreview(state: BoardState, position: Position, rng = new Random(), options: SpawnOptions = {}): BoardTile | null {
+    const tile = this.tileAt(state, position);
+    if (!tile || tile.lockedTurns > 0) return null;
+    this.ensurePreview(state, rng, options);
+    tile.value = state.spawnPreview.shift() ?? this.rollSpawnValue(rng, options);
+    tile.cursed = false;
+    this.ensurePreview(state, rng, options);
+    return tile;
+  }
+
   static forceMergePair(state: BoardState): MergeEvent | null {
     const entries = state.cells
       .map((tile, index) => ({ tile, index }))

@@ -23,7 +23,11 @@ export type RelicEffectType =
   | 'betterPreview'
   | 'thirdEightCreates16'
   | 'firstSpawnUpgraded'
-  | 'comboBurn';
+  | 'comboBurn'
+  | 'comboShield'
+  | 'guardBoost'
+  | 'shopDiscount'
+  | 'bossExactEnergy';
 
 export interface RelicDefinition {
   id: string;

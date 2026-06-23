@@ -61,6 +61,14 @@ export class RelicSystem {
     return this.hasEffect(run, 'extraShopItem') ? 1 : 0;
   }
 
+  static getShopPrice(run: RunState, basePrice: number): number {
+    return this.hasEffect(run, 'shopDiscount') ? Math.max(1, Math.ceil(basePrice * 0.85)) : basePrice;
+  }
+
+  static getGuardShieldBonus(run: RunState): number {
+    return this.hasEffect(run, 'guardBoost') ? 3 : 0;
+  }
+
   static onCombatStart(run: RunState, combat: CombatState): void {
     if (this.hasEffect(run, 'firstSpawnUpgraded')) {
       const firstTile = BoardSystem.occupiedPositions(combat.board)[0];
@@ -143,6 +151,11 @@ export class RelicSystem {
     if (packet.exact && this.hasEffect(run, 'exactCombo')) {
       combat.combo += getRelicById('moonLedger').value ?? 2;
     }
+    if (packet.exact && combat.rank === 'boss' && this.hasEffect(run, 'bossExactEnergy')) {
+      this.gainEnergy(combat, result, 1);
+      combat.enemy.attackTimer = Math.max(1, combat.enemy.attackTimer - 1);
+      CombatFeedbackSystem.log(result, 'El pacto del jefe da energia, pero acelera su ataque.');
+    }
     if (packet.exact && this.hasEffect(run, 'exactDuplicate') && !combat.exactDuplicated) {
       const lowTiles = BoardSystem.occupiedPositions(combat.board).filter((position) => {
         const tile = BoardSystem.tileAt(combat.board, position);
@@ -163,6 +176,9 @@ export class RelicSystem {
     if (combat.combo >= 4 && this.hasEffect(run, 'comboBurn')) {
       combat.statusEffects.enemyBurn = Math.max(combat.statusEffects.enemyBurn, 2);
       CombatFeedbackSystem.log(result, 'La brasa prende al enemigo.');
+    }
+    if (combat.combo >= 4 && this.hasEffect(run, 'comboShield')) {
+      this.gainShield(combat, result, 1);
     }
     if (combat.turn > 0 && combat.turn % 5 === 0 && this.hasEffect(run, 'turnRerollEnergy')) {
       this.gainEnergy(combat, result, 1);
