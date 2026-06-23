@@ -29,7 +29,7 @@ export const SHOP_UPGRADES: ShopItemDefinition[] = [
     title: 'Sutura de Neón',
     description: 'Cura 20 vida.',
     price: 32,
-    rarity: 'rare',
+    rarity: 'uncommon',
     amount: 20
   },
   {
@@ -54,7 +54,7 @@ export const SHOP_UPGRADES: ShopItemDefinition[] = [
     type: 'relic',
     title: 'Espejo Exacto',
     description: 'Compra talismán: golpes exactos dobles.',
-    price: 48,
+    price: 46,
     rarity: 'rare',
     refId: 'exactMirror'
   },
@@ -72,8 +72,8 @@ export const SHOP_UPGRADES: ShopItemDefinition[] = [
     type: 'skill',
     title: 'Duplicar',
     description: 'Añade habilidad: copia fichas bajas.',
-    price: 38,
-    rarity: 'rare',
+    price: 32,
+    rarity: 'uncommon',
     refId: 'duplicate'
   },
   {
@@ -81,8 +81,8 @@ export const SHOP_UPGRADES: ShopItemDefinition[] = [
     type: 'skill',
     title: 'Vista Oracular',
     description: 'Añade habilidad: controla próximas apariciones.',
-    price: 56,
-    rarity: 'legendary',
+    price: 84,
+    rarity: 'mythic',
     refId: 'oraclePreview'
   }
 ];

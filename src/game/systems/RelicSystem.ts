@@ -1,5 +1,6 @@
 import { RELICS, getRelicById } from '../data/relics';
 import { BoardSystem, type SpawnOptions } from './BoardSystem';
+import { CombatFeedbackSystem } from './CombatFeedbackSystem';
 import { EnemySystem } from './EnemySystem';
 import type { CombatActionResult, CombatState, DamagePacket } from '../types/combat';
 import type { BoardMoveResult, MergeEvent, SpawnEvent } from '../types/board';
@@ -111,26 +112,21 @@ export class RelicSystem {
         if (spawn) {
           this.ensureMove(result, combat).spawns.push(spawn);
           this.pushSpawnFloat(result, spawn, '+16', 'energy');
-          result.logs.push('La Puerta del Ocho crea un 16.');
+          CombatFeedbackSystem.log(result, 'La Puerta del Ocho crea un 16.');
         }
       }
     }
     if (packet.cursed && this.hasEffect(run, 'cursedFours')) {
       this.damagePlayer(combat, result, 1);
-      result.logs.push('La maldición muerde.');
+      CombatFeedbackSystem.log(result, 'La maldición muerde.');
     }
     if (merge.value >= 128 && this.hasEffect(run, 'healOn128')) {
-      this.heal(combat, result, 4);
-      result.floating.push({
-        text: '+4 vida',
-        x: merge.position.col,
-        y: merge.position.row,
-        tone: 'heal'
-      });
+      const healed = this.heal(combat, result, 4);
+      CombatFeedbackSystem.playerHeal(result, healed, merge.position);
     }
     if (merge.value >= 64 && this.hasEffect(run, 'delayOnBigMerge')) {
       combat.enemy.attackTimer += 1;
-      result.logs.push('La campana retrasa el ataque.');
+      CombatFeedbackSystem.log(result, 'La campana retrasa el ataque.');
     }
     if (packet.targetHit && this.hasEffect(run, 'goldOnTarget')) {
       const amount = getRelicById('coinMagnet').value ?? 2;
@@ -155,7 +151,7 @@ export class RelicSystem {
       const source = lowTiles.length > 0 ? rng.pick(lowTiles) : null;
       if (source && BoardSystem.duplicateTile(combat.board, source, rng)) {
         combat.exactDuplicated = true;
-        result.logs.push('La semilla prisma copia una ficha baja.');
+        CombatFeedbackSystem.log(result, 'La semilla prisma copia una ficha baja.');
       }
     }
   }
@@ -166,12 +162,12 @@ export class RelicSystem {
     }
     if (combat.combo >= 4 && this.hasEffect(run, 'comboBurn')) {
       combat.statusEffects.enemyBurn = Math.max(combat.statusEffects.enemyBurn, 2);
-      result.logs.push('La brasa prende al enemigo.');
+      CombatFeedbackSystem.log(result, 'La brasa prende al enemigo.');
     }
     if (combat.turn > 0 && combat.turn % 5 === 0 && this.hasEffect(run, 'turnRerollEnergy')) {
       this.gainEnergy(combat, result, 1);
       EnemySystem.rerollTarget(combat.enemy, new Random(run.seed + combat.turn * 17));
-      result.logs.push('La piedra ruleta cambia el objetivo.');
+      CombatFeedbackSystem.log(result, 'La piedra ruleta cambia el objetivo.');
     }
   }
 
@@ -188,7 +184,7 @@ export class RelicSystem {
   static afterNoMoves(run: RunState, combat: CombatState, result: CombatActionResult, rng: Random): void {
     if (!this.hasEffect(run, 'softNoMoves')) return;
     if (BoardSystem.removeRandomTile(combat.board, rng)) {
-      result.logs.push('La máscara rompe una ficha para abrir espacio.');
+      CombatFeedbackSystem.log(result, 'La máscara rompe una ficha para abrir espacio.');
     }
   }
 
@@ -196,7 +192,7 @@ export class RelicSystem {
     this.consumeTemporarySkillDiscount(run);
     if (this.hasEffect(run, 'bloodEdge')) {
       combat.delayedDamageBonus += getRelicById('bloodEdge').value ?? 3;
-      result.logs.push('El filo prepara daño extra.');
+      CombatFeedbackSystem.log(result, 'El filo prepara daño extra.');
     }
   }
 
@@ -215,13 +211,15 @@ export class RelicSystem {
     if (amount <= 0) return;
     combat.player.shield += amount;
     result.shieldGained += amount;
-    result.floating.push({ text: `+${amount} escudo`, x: 0, y: 0, tone: 'heal' });
+    CombatFeedbackSystem.shield(result, amount);
   }
 
-  private static heal(combat: CombatState, result: CombatActionResult, amount: number): void {
+  private static heal(combat: CombatState, result: CombatActionResult, amount: number): number {
     const before = combat.player.hp;
     combat.player.hp = clamp(combat.player.hp + amount, 0, combat.player.maxHp);
-    result.healed += combat.player.hp - before;
+    const healed = combat.player.hp - before;
+    result.healed += healed;
+    return healed;
   }
 
   private static damagePlayer(combat: CombatState, result: CombatActionResult, amount: number): void {
@@ -230,6 +228,7 @@ export class RelicSystem {
     const damage = amount - blocked;
     combat.player.hp = clamp(combat.player.hp - damage, 0, combat.player.maxHp);
     result.playerDamaged += damage;
+    if (damage <= 0 && blocked > 0) CombatFeedbackSystem.playerBlocked(result);
   }
 
   private static ensureMove(result: CombatActionResult, combat: CombatState): BoardMoveResult {
@@ -246,7 +245,7 @@ export class RelicSystem {
   }
 
   private static pushSpawnFloat(result: CombatActionResult, spawn: SpawnEvent, text: string, tone: CombatActionResult['floating'][number]['tone']): void {
-    result.floating.push({
+    CombatFeedbackSystem.floating(result, {
       text,
       x: spawn.position.col,
       y: spawn.position.row,

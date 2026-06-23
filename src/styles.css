@@ -212,6 +212,15 @@ canvas {
   cursor: not-allowed;
 }
 
+.pixel-button:disabled {
+  color: rgba(248, 250, 252, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035)),
+    rgba(12, 15, 31, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+
 .button-icon {
   font-weight: 900;
 }
@@ -820,6 +829,15 @@ canvas {
 
 .shop-card.sold {
   opacity: 0.45;
+}
+
+.shop-card.unaffordable {
+  opacity: 0.72;
+}
+
+.shop-card.unaffordable .price-tag {
+  color: var(--text);
+  background: var(--danger);
 }
 
 .settings-grid {
@@ -1872,7 +1890,7 @@ canvas {
 @media (min-width: 901px) {
   .combat-topbar {
     left: calc(50% + 170px);
-    width: min(650px, calc(100vw - 420px));
+    width: min(720px, calc(100vw - 420px));
     transform: translateX(-50%);
   }
 }
@@ -2036,5 +2054,720 @@ canvas {
   .choice-icon {
     width: 40px;
     height: 40px;
+  }
+}
+
+/* v0.4 combat feedback + map fit */
+.combat-log {
+  position: fixed;
+  right: 14px;
+  bottom: 158px;
+  z-index: 22;
+  width: 260px;
+  max-height: 156px;
+  padding: 8px 10px;
+  color: var(--muted);
+  background:
+    linear-gradient(135deg, rgba(179, 136, 255, 0.08), transparent 28%),
+    rgba(5, 7, 18, 0.76);
+  border: 1px solid rgba(179, 136, 255, 0.22);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.36),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+  clip-path: polygon(0 9px, 9px 0, calc(100% - 9px) 0, 100% 9px, 100% calc(100% - 9px), calc(100% - 9px) 100%, 9px 100%, 0 calc(100% - 9px));
+  pointer-events: auto;
+}
+
+.combat-log summary {
+  color: var(--violet);
+  cursor: pointer;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.combat-log div {
+  display: grid;
+  gap: 5px;
+  max-height: 112px;
+  margin-top: 7px;
+  overflow: auto;
+}
+
+.combat-log span {
+  padding-left: 8px;
+  border-left: 2px solid rgba(179, 136, 255, 0.35);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+@media (min-width: 761px) {
+  .map-screen .screen-inner {
+    height: min(760px, 96vh);
+    display: grid;
+  }
+
+  .map-shell {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .map-frame {
+    min-height: 0;
+  }
+
+  .map-board,
+  .map-detail {
+    min-height: 0;
+  }
+
+  .map-detail {
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 900px) {
+  .combat-log {
+    right: 8px;
+    bottom: 110px;
+    width: min(220px, calc(50vw - 14px));
+    max-height: 118px;
+  }
+
+  .combat-log div {
+    max-height: 78px;
+  }
+}
+
+@media (max-width: 760px) {
+  .map-layers {
+    min-height: 720px;
+    grid-template-rows: repeat(6, 104px);
+  }
+
+  .map-node {
+    width: min(108px, 31vw);
+    height: 94px;
+  }
+
+  .map-node-boss {
+    width: min(128px, 38vw);
+    height: 112px;
+  }
+
+  .node-title {
+    font-size: 12px;
+  }
+
+  .node-status {
+    font-size: 10px;
+  }
+
+  .map-detail {
+    max-height: 38vh;
+    background:
+      radial-gradient(circle at 0 0, rgba(64, 246, 210, 0.18), transparent 42%),
+      rgba(6, 8, 20, 0.96);
+    border-color: rgba(64, 246, 210, 0.32);
+  }
+
+  .map-detail p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 560px) {
+  .combat-topbar {
+    min-height: 126px;
+  }
+
+  .player-stack {
+    top: 150px;
+    width: 136px;
+  }
+
+  .combat-log {
+    right: 8px;
+    bottom: 104px;
+    width: 136px;
+    max-height: 44px;
+    padding: 7px 9px;
+  }
+
+  .combat-log[open] {
+    width: calc(100vw - 166px);
+    max-height: 118px;
+  }
+
+  .combat-log div {
+    max-height: 76px;
+  }
+
+  .combat-log span {
+    font-size: 11px;
+  }
+
+  .skill-dock {
+    background:
+      linear-gradient(135deg, rgba(64, 246, 210, 0.13), transparent 28%),
+      rgba(5, 7, 18, 0.92);
+  }
+
+  .skill-dock .skill-button {
+    color: #f8fafc;
+    background:
+      linear-gradient(180deg, rgba(64, 246, 210, 0.12), rgba(255, 255, 255, 0.045)),
+      rgba(10, 14, 31, 0.98);
+    border-color: rgba(64, 246, 210, 0.36);
+  }
+
+  .skill-copy strong {
+    color: #f8fafc;
+    text-shadow: 0 0 8px rgba(64, 246, 210, 0.24);
+  }
+}
+
+/* v0.5 arcane rarity system */
+.rarity-common {
+  --rarity-color: #40f6d2;
+  --rarity-glow: rgba(64, 246, 210, 0.18);
+}
+
+.rarity-uncommon {
+  --rarity-color: #a3e635;
+  --rarity-glow: rgba(163, 230, 53, 0.2);
+  border-color: rgba(163, 230, 53, 0.42);
+}
+
+.rarity-rare {
+  --rarity-color: #38bdf8;
+  --rarity-glow: rgba(56, 189, 248, 0.22);
+}
+
+.rarity-epic {
+  --rarity-color: #c084fc;
+  --rarity-glow: rgba(192, 132, 252, 0.26);
+  border-color: rgba(192, 132, 252, 0.62);
+}
+
+.rarity-legendary {
+  --rarity-color: #ffcc66;
+  --rarity-glow: rgba(255, 204, 102, 0.3);
+}
+
+.rarity-mythic {
+  --rarity-color: #ff4d8d;
+  --rarity-glow: rgba(255, 77, 141, 0.34);
+  border-color: rgba(255, 77, 141, 0.78);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 30px rgba(255, 77, 141, 0.22);
+}
+
+.card-rarity {
+  color: var(--rarity-color, var(--gold));
+  text-shadow: 0 0 10px var(--rarity-glow, rgba(255, 204, 102, 0.24));
+}
+
+.reward-card,
+.shop-card,
+.collection-card,
+.skill-button,
+.relic-chip {
+  border-color: color-mix(in srgb, var(--rarity-color, rgba(255, 255, 255, 0.22)) 58%, transparent);
+}
+
+.collection-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.reward-card.rarity-uncommon,
+.shop-card.rarity-uncommon,
+.collection-card.rarity-uncommon,
+.skill-button.rarity-uncommon {
+  background:
+    radial-gradient(circle at 16% 0, rgba(163, 230, 53, 0.14), transparent 42%),
+    rgba(255, 255, 255, 0.055);
+}
+
+.reward-card.rarity-epic,
+.shop-card.rarity-epic,
+.collection-card.rarity-epic,
+.skill-button.rarity-epic {
+  background:
+    radial-gradient(circle at 50% 0, rgba(192, 132, 252, 0.18), transparent 52%),
+    linear-gradient(145deg, rgba(255, 77, 141, 0.08), transparent 46%),
+    rgba(255, 255, 255, 0.055);
+}
+
+.reward-card.rarity-mythic,
+.shop-card.rarity-mythic,
+.collection-card.rarity-mythic,
+.skill-button.rarity-mythic {
+  background:
+    radial-gradient(circle at 50% 0, rgba(255, 77, 141, 0.24), transparent 50%),
+    linear-gradient(135deg, rgba(64, 246, 210, 0.12), transparent 28%),
+    linear-gradient(315deg, rgba(255, 204, 102, 0.1), transparent 30%),
+    rgba(16, 6, 22, 0.94);
+  animation: mythic-breathe 2.4s ease-in-out infinite;
+}
+
+.reward-card::after,
+.shop-card::after,
+.collection-card::after {
+  content: "";
+  position: absolute;
+  left: -60%;
+  top: -20%;
+  width: 38%;
+  height: 140%;
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  transform: rotate(18deg);
+  pointer-events: none;
+}
+
+.reward-card:hover::after,
+.shop-card:hover::after,
+.collection-card:hover::after {
+  opacity: 1;
+  animation: card-sheen 620ms ease;
+}
+
+.relic-medallion.game-icon {
+  width: 24px;
+  height: 24px;
+  overflow: visible;
+  color: var(--rarity-color, currentColor);
+  filter: drop-shadow(0 0 6px var(--rarity-glow, rgba(64, 246, 210, 0.22)));
+}
+
+.relic-chip .relic-medallion.game-icon,
+.reward-icon .relic-medallion.game-icon,
+.shop-icon .relic-medallion.game-icon,
+.collection-relic-icon .relic-medallion.game-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.relic-medallion .medallion-halo {
+  fill: currentColor;
+  opacity: 0.14;
+}
+
+.relic-medallion .medallion-frame {
+  fill: #080b1c;
+  stroke: currentColor;
+  stroke-width: 1.25;
+}
+
+.relic-medallion .medallion-core {
+  fill: rgba(255, 255, 255, 0.07);
+  stroke: currentColor;
+  stroke-width: 0.85;
+  opacity: 0.96;
+}
+
+.relic-medallion .medallion-sigil {
+  transform-origin: 12px 12px;
+  transform: scale(0.56);
+}
+
+.relic-medallion .medallion-shards {
+  opacity: 0.72;
+}
+
+.relic-medallion.rarity-epic .medallion-shards,
+.relic-medallion.rarity-legendary .medallion-shards,
+.relic-medallion.rarity-mythic .medallion-shards {
+  animation: relic-orbit 2.8s linear infinite;
+  transform-origin: 12px 12px;
+}
+
+.relic-medallion.rarity-mythic {
+  animation: relic-mythic-glow 1.8s ease-in-out infinite;
+}
+
+@keyframes card-sheen {
+  from {
+    transform: translateX(0) rotate(18deg);
+  }
+  to {
+    transform: translateX(420%) rotate(18deg);
+  }
+}
+
+@keyframes mythic-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 24px rgba(255, 77, 141, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 42px rgba(64, 246, 210, 0.2);
+  }
+}
+
+@keyframes relic-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes relic-mythic-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 7px rgba(255, 77, 141, 0.55));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(64, 246, 210, 0.62));
+  }
+}
+
+/* v0.6 full-screen spectacle pass */
+.menu-screen .screen-inner,
+.class-shell,
+.reward-shell,
+.shop-shell,
+.event-shell,
+.rest-shell,
+.end-shell {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(64, 246, 210, 0.16), transparent 26%),
+    radial-gradient(circle at 84% 18%, rgba(255, 77, 141, 0.12), transparent 24%),
+    linear-gradient(145deg, rgba(255, 204, 102, 0.05), transparent 42%),
+    rgba(5, 7, 18, 0.9);
+}
+
+.menu-orbit,
+.scene-orbit,
+.event-portal,
+.end-core {
+  position: absolute;
+  pointer-events: none;
+}
+
+.menu-orbit {
+  right: clamp(24px, 6vw, 86px);
+  top: clamp(20px, 6vw, 70px);
+  width: clamp(118px, 20vw, 230px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(64, 246, 210, 0.22);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  animation: relic-orbit 18s linear infinite;
+}
+
+.menu-orbit i {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  background: rgba(64, 246, 210, 0.12);
+  border: 1px solid rgba(64, 246, 210, 0.38);
+  box-shadow: 0 0 18px rgba(64, 246, 210, 0.18);
+}
+
+.menu-orbit i:nth-child(1) {
+  left: 12%;
+  top: 18%;
+}
+
+.menu-orbit i:nth-child(2) {
+  right: 10%;
+  top: 42%;
+  background: rgba(255, 77, 141, 0.13);
+  border-color: rgba(255, 77, 141, 0.42);
+}
+
+.menu-orbit i:nth-child(3) {
+  left: 43%;
+  bottom: 8%;
+  background: rgba(255, 204, 102, 0.13);
+  border-color: rgba(255, 204, 102, 0.4);
+}
+
+.class-shell .card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+}
+
+.class-card {
+  min-height: 238px;
+  align-content: start;
+}
+
+.class-card:hover {
+  border-color: var(--class-color);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--class-color) 45%, transparent),
+    0 0 32px color-mix(in srgb, var(--class-color) 24%, transparent);
+}
+
+.class-sigil {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  color: var(--class-color);
+  background: color-mix(in srgb, var(--class-color) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--class-color) 46%, transparent);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--class-color) 22%, transparent);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+
+.class-sigil .game-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.loadout-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: auto;
+}
+
+.loadout-chip {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  color: var(--rarity-color, var(--cyan));
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid color-mix(in srgb, var(--rarity-color, var(--cyan)) 48%, transparent);
+  font-style: normal;
+  clip-path: polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px));
+}
+
+.loadout-chip .game-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.scene-orbit {
+  right: clamp(28px, 6vw, 84px);
+  top: clamp(64px, 14vw, 118px);
+  width: 154px;
+  height: 154px;
+  border: 2px dashed rgba(255, 204, 102, 0.24);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 32px rgba(255, 204, 102, 0.08),
+    0 0 32px rgba(255, 204, 102, 0.08);
+  animation: relic-orbit 12s linear infinite;
+}
+
+.reward-card,
+.shop-card,
+.event-choice,
+.rest-card {
+  transform-origin: 50% 100%;
+}
+
+.reward-card:hover,
+.shop-card:hover:not(.sold),
+.event-choice:hover,
+.rest-card:hover {
+  transform: translateY(-4px) scale(1.015);
+}
+
+.shop-keeper {
+  position: absolute;
+  right: clamp(16px, 6vw, 82px);
+  bottom: clamp(18px, 5vw, 64px);
+  width: 132px;
+  height: 132px;
+  opacity: 0.34;
+  pointer-events: none;
+}
+
+.shop-keeper i,
+.shop-keeper b {
+  position: absolute;
+  display: block;
+  background: rgba(255, 204, 102, 0.18);
+  border: 1px solid rgba(255, 204, 102, 0.42);
+}
+
+.shop-keeper i:nth-child(1) {
+  left: 26px;
+  top: 10px;
+  width: 80px;
+  height: 88px;
+  clip-path: polygon(50% 0, 86% 20%, 100% 68%, 74% 100%, 26% 100%, 0 68%, 14% 20%);
+}
+
+.shop-keeper i:nth-child(2) {
+  left: 45px;
+  top: 38px;
+  width: 42px;
+  height: 12px;
+  background: rgba(64, 246, 210, 0.22);
+  border-color: rgba(64, 246, 210, 0.42);
+  box-shadow: 0 0 18px rgba(64, 246, 210, 0.22);
+}
+
+.shop-keeper b {
+  left: 30px;
+  top: 82px;
+  width: 72px;
+  height: 12px;
+}
+
+.event-portal {
+  right: clamp(22px, 7vw, 92px);
+  top: clamp(78px, 16vw, 136px);
+  width: 132px;
+  height: 132px;
+  background:
+    radial-gradient(circle, rgba(179, 136, 255, 0.22), transparent 54%),
+    conic-gradient(from 90deg, rgba(64, 246, 210, 0.2), transparent, rgba(255, 77, 141, 0.2), transparent, rgba(64, 246, 210, 0.2));
+  border-radius: 50%;
+  animation: relic-orbit 9s linear infinite;
+}
+
+.rest-fire {
+  position: absolute;
+  right: clamp(24px, 7vw, 92px);
+  bottom: clamp(18px, 5vw, 64px);
+  display: flex;
+  gap: 8px;
+  align-items: end;
+  pointer-events: none;
+}
+
+.rest-fire i {
+  width: 18px;
+  height: 68px;
+  background: linear-gradient(180deg, rgba(255, 204, 102, 0.72), rgba(64, 246, 210, 0.08));
+  clip-path: polygon(50% 0, 100% 58%, 50% 100%, 0 58%);
+  animation: rest-flame 1.3s ease-in-out infinite;
+}
+
+.rest-fire i:nth-child(2) {
+  height: 92px;
+  animation-delay: 140ms;
+}
+
+.rest-fire i:nth-child(3) {
+  animation-delay: 280ms;
+}
+
+.end-shell {
+  min-height: min(720px, 94vh);
+  align-content: center;
+  justify-items: start;
+}
+
+.end-core {
+  right: clamp(24px, 9vw, 112px);
+  top: 50%;
+  width: clamp(120px, 24vw, 240px);
+  height: clamp(120px, 24vw, 240px);
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+  color: var(--gold);
+  background:
+    radial-gradient(circle, rgba(255, 204, 102, 0.22), transparent 58%),
+    rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 204, 102, 0.28);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+
+.end-core .game-icon {
+  width: 46%;
+  height: 46%;
+  filter: drop-shadow(0 0 18px currentColor);
+}
+
+.end-core.sealed {
+  animation: sealed-core 2.2s ease-in-out infinite;
+}
+
+.end-core.broken {
+  color: var(--pink);
+  border-color: rgba(255, 77, 141, 0.42);
+  animation: broken-core 900ms steps(2, end) infinite;
+}
+
+.end-stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.end-stat-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 10px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  clip-path: polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px));
+}
+
+@keyframes rest-flame {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translateY(4px) scaleY(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-6px) scaleY(1.08);
+  }
+}
+
+@keyframes sealed-core {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 12px rgba(255, 204, 102, 0.3));
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 28px rgba(64, 246, 210, 0.34));
+    transform: translateY(-50%) scale(1.04);
+  }
+}
+
+@keyframes broken-core {
+  0%,
+  100% {
+    transform: translateY(-50%) translateX(0);
+  }
+  50% {
+    transform: translateY(-50%) translateX(4px);
+  }
+}
+
+@media (max-width: 760px) {
+  .menu-orbit,
+  .scene-orbit,
+  .shop-keeper,
+  .event-portal,
+  .rest-fire {
+    opacity: 0.18;
+    transform: scale(0.78);
+    transform-origin: top right;
+  }
+
+  .end-core {
+    position: relative;
+    right: auto;
+    top: auto;
+    width: 96px;
+    height: 96px;
+    transform: none;
+    order: -1;
+  }
+
+  .end-core.sealed,
+  .end-core.broken {
+    animation: none;
+  }
+
+  .end-shell {
+    min-height: 100%;
   }
 }

@@ -23,9 +23,10 @@ export class RewardScene extends Phaser.Scene {
     const root = setUi(`<main class="screen reward-screen">
       <section class="screen-inner reward-shell">
         <div class="scene-sigil" aria-hidden="true">2048</div>
+        <div class="scene-orbit" aria-hidden="true"></div>
         <div class="top-actions">
           <div>
-            <span class="eyebrow">Recompensa</span>
+            <span class="eyebrow">Recompensa · ${reward.source === 'elite' ? 'Botín de élite' : reward.source === 'boss' ? 'Reliquia de jefe' : 'Tesoro de run'}</span>
             <h2>Elige una mejora</h2>
           </div>
         </div>

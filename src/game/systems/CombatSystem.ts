@@ -1,6 +1,7 @@
 import { BALANCE } from '../data/balancing';
 import { getRelicById } from '../data/relics';
 import { BoardSystem } from './BoardSystem';
+import { CombatFeedbackSystem } from './CombatFeedbackSystem';
 import { EnemySystem } from './EnemySystem';
 import { RelicSystem } from './RelicSystem';
 import { SkillSystem } from './SkillSystem';
@@ -57,6 +58,7 @@ export class CombatSystem {
         drained: 0
       },
       skillStates: run.skillIds.map((id) => ({ id, cooldownLeft: 0 })),
+      recentLogs: [],
       lastDirection: null,
       selectionHint: null
     };
@@ -77,6 +79,7 @@ export class CombatSystem {
       if (!BoardSystem.hasValidMoves(this.state.board)) {
         this.applyNoMovesPenalty(result);
         this.checkLoss(result);
+        CombatFeedbackSystem.commit(this.state, result);
         return result;
       }
       return { ...result, ok: false, reason: 'Ese movimiento no cambia el tablero.' };
@@ -96,8 +99,8 @@ export class CombatSystem {
     result.combo = this.state.combo;
 
     if (result.targetHits === 0 && EnemySystem.hasBehavior(this.state.enemy, 'drainOnDelay')) {
-      this.damagePlayer(EnemySystem.behaviorAmount(this.state.enemy, 'drainOnDelay', 1), result);
-      result.logs.push('La demora drena vida.');
+      const drained = this.damagePlayer(EnemySystem.behaviorAmount(this.state.enemy, 'drainOnDelay', 1), result);
+      CombatFeedbackSystem.log(result, drained > 0 ? 'La demora drena vida.' : 'La demora queda bloqueada.');
     }
 
     RelicSystem.afterMove(this.run, this.state, result);
@@ -117,6 +120,7 @@ export class CombatSystem {
     }
 
     this.finishAction(result);
+    CombatFeedbackSystem.commit(this.state, result);
     return result;
   }
 
@@ -151,6 +155,7 @@ export class CombatSystem {
     RelicSystem.onSkillUsed(this.run, this.state, result);
     this.applyBurnDamage(result);
     this.finishAction(result);
+    CombatFeedbackSystem.commit(this.state, result);
     return result;
   }
 
@@ -162,10 +167,16 @@ export class CombatSystem {
       const exact = merge.value === target;
       const targetHit = EnemySystem.hasBehavior(this.state.enemy, 'exactOnly') ? exact : merge.value >= target;
       let amount = targetHit ? Math.floor(merge.value / 4) + Math.floor(target / 4) : Math.floor(merge.value / 16);
+      let zeroLabel: string | null = null;
 
-      if (EnemySystem.hasBehavior(this.state.enemy, 'exactOnly') && !exact) amount = 0;
+      if (EnemySystem.hasBehavior(this.state.enemy, 'exactOnly') && !exact) {
+        amount = 0;
+        zeroLabel = 'Resistido';
+      }
       if (EnemySystem.hasBehavior(this.state.enemy, 'armor') && !exact) {
+        const beforeArmor = amount;
         amount = Math.max(0, amount - EnemySystem.behaviorAmount(this.state.enemy, 'armor', 2));
+        if (beforeArmor > 0 && amount === 0) zeroLabel = 'Absorbido';
       }
 
       let packet: DamagePacket = {
@@ -178,6 +189,7 @@ export class CombatSystem {
       };
       packet = RelicSystem.modifyDamage(this.run, this.state, packet);
       total += packet.amount;
+      if (packet.amount <= 0 && !zeroLabel && (targetHit || exact)) zeroLabel = 'Sin efecto';
 
       if (targetHit) {
         result.targetHits += 1;
@@ -185,12 +197,8 @@ export class CombatSystem {
       }
       if (exact) result.exactHits += 1;
       if (merge.value >= 64 || packet.amount >= 24) result.bigHit = true;
-      result.floating.push({
-        text: packet.amount > 0 ? `-${packet.amount}` : '0',
-        x: merge.position.col,
-        y: merge.position.row,
-        tone: packet.amount > 0 ? 'damage' : 'danger'
-      });
+      CombatFeedbackSystem.boardDamage(result, packet.amount, merge.position, zeroLabel);
+      if (packet.amount <= 0 && zeroLabel) CombatFeedbackSystem.log(result, `${merge.value}: ${zeroLabel}.`);
       RelicSystem.afterMerge(this.run, this.state, merge, packet, result, this.rng);
     }
     result.damage += total;
@@ -204,7 +212,7 @@ export class CombatSystem {
     RelicSystem.afterEnemyDamage(this.run, this.state, hpBefore, damage, result);
     if (this.state.enemy.hp <= 0) {
       this.state.status = 'won';
-      result.logs.push(`${this.state.enemy.name} cae.`);
+      CombatFeedbackSystem.log(result, `${this.state.enemy.name} cae.`);
     }
   }
 
@@ -212,7 +220,7 @@ export class CombatSystem {
     if (this.state.enemy.hp <= 0 || this.state.statusEffects.enemyBurn <= 0) return;
     const burnDamage = 3 + Math.floor(this.state.combo / 3);
     this.state.statusEffects.enemyBurn -= 1;
-    result.logs.push(`Brasa: ${burnDamage} daño.`);
+    CombatFeedbackSystem.log(result, `Brasa: ${burnDamage} daño.`);
     result.bigHit ||= burnDamage >= 6;
     result.damage += burnDamage;
     this.applyDamageToEnemy(burnDamage, result);
@@ -221,17 +229,19 @@ export class CombatSystem {
   private applyNoMovesPenalty(result: CombatActionResult): void {
     const reduction = RelicSystem.noMovesDamageReduction(this.run);
     const damage = Math.max(1, BALANCE.baseNoMovesDamage - reduction);
-    this.damagePlayer(damage, result);
-    result.logs.push('Tablero bloqueado: recibes castigo.');
+    const taken = this.damagePlayer(damage, result);
+    CombatFeedbackSystem.log(result, taken > 0 ? 'Tablero bloqueado: recibes castigo.' : 'Tablero bloqueado: Bloqueado.');
     RelicSystem.afterNoMoves(this.run, this.state, result, this.rng);
   }
 
-  private damagePlayer(amount: number, result: CombatActionResult): void {
+  private damagePlayer(amount: number, result: CombatActionResult): number {
     const blocked = Math.min(this.state.player.shield, amount);
     this.state.player.shield -= blocked;
     const damage = amount - blocked;
     this.state.player.hp = clamp(this.state.player.hp - damage, 0, this.state.player.maxHp);
     result.playerDamaged += damage;
+    if (damage <= 0 && blocked > 0) CombatFeedbackSystem.playerBlocked(result);
+    return damage;
   }
 
   private gainEnergy(result: CombatActionResult, amount: number): void {
@@ -254,7 +264,7 @@ export class CombatSystem {
   private checkLoss(result: CombatActionResult): void {
     if (this.state.player.hp > 0 || this.state.status === 'won') return;
     this.state.status = 'lost';
-    result.logs.push('Caes ante el Núcleo.');
+    CombatFeedbackSystem.log(result, 'Caes ante el Núcleo.');
   }
 
   private syncRunPlayer(): void {

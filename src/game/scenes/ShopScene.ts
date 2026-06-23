@@ -31,23 +31,25 @@ export class ShopScene extends Phaser.Scene {
     const cards = offers
       .map((item) => {
         const sold = Boolean(run.flags[EconomySystem.purchaseFlag(run, item.id)]);
-        return `<article class="shop-card rarity-${item.rarity} ${sold ? 'sold' : ''}">
+        const unaffordable = !sold && run.player.gold < item.price;
+        return `<article class="shop-card rarity-${item.rarity} ${sold ? 'sold' : ''} ${unaffordable ? 'unaffordable' : ''}">
           <span class="shop-icon">${shopIcon(item)}</span>
           <span class="card-rarity">${rarityLabel(item.rarity)}</span>
           <strong>${escapeHtml(item.title)}</strong>
           <span>${escapeHtml(item.description)}</span>
           <b class="price-tag">${item.price} oro</b>
-          ${pixelButton({ label: sold ? 'Comprado' : 'Comprar', data: { item: item.id }, disabled: sold })}
+          ${pixelButton({ label: sold ? 'Comprado' : unaffordable ? 'Sin oro' : 'Comprar', data: { item: item.id }, disabled: sold || unaffordable })}
         </article>`;
       })
       .join('');
     const root = setUi(`<main class="screen shop-screen">
       <section class="screen-inner shop-shell">
         <div class="scene-sigil" aria-hidden="true">$</div>
+        <div class="shop-keeper" aria-hidden="true"><i></i><i></i><b></b></div>
         <div class="top-actions">
           <div>
             <span class="eyebrow">Tienda</span>
-            <h2>Oro: ${run.player.gold}</h2>
+            <h2>Mercado de talismanes · ${run.player.gold} oro</h2>
           </div>
           ${pixelButton({ id: 'leave-shop', label: 'Salir', variant: 'ghost' })}
         </div>
@@ -56,6 +58,7 @@ export class ShopScene extends Phaser.Scene {
     </main>`);
 
     bindClick(root, '.shop-card .pixel-button', (button) => {
+      if (button.hasAttribute('disabled')) return;
       const item = offers.find((offer) => offer.id === button.dataset.item);
       if (!item) return;
       const outcome = EconomySystem.purchase(run, item);
@@ -72,7 +75,7 @@ export class ShopScene extends Phaser.Scene {
 }
 
 function shopIcon(item: ShopItemDefinition): string {
-  if (item.type === 'relic' && item.refId) return relicIconSvg(item.refId, item.title);
+  if (item.type === 'relic' && item.refId) return relicIconSvg(item.refId, item.title, item.rarity);
   if (item.type === 'skill' && item.refId) return skillIconSvg(item.refId, item.title);
   if (item.type === 'heal') return iconSvg('hp', item.title);
   if (item.type === 'maxHp') return iconSvg('heart', item.title);

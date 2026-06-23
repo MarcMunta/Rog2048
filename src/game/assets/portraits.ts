@@ -1,5 +1,11 @@
 import Phaser from 'phaser';
+import { gameStore } from '../systems/GameStore';
 import type { EnemyInstance } from '../types/enemy';
+import {
+  createEnemySprite,
+  playEnemySpriteAnimation,
+  type EnemySpriteAnimation
+} from './generated/characters/EnemySpriteFactory';
 
 export type PortraitShape = 'mask' | 'beast' | 'imp' | 'mirror' | 'thief' | 'hex' | 'armor' | 'dealer' | 'specter' | 'calc' | 'jaw' | 'nun' | 'crown' | 'oracle' | 'core';
 
@@ -39,38 +45,81 @@ export function createEnemyPortrait(scene: Phaser.Scene, enemy: EnemyInstance): 
   const secondary = enemy.palette.secondary;
   const accent = enemy.palette.accent;
 
+  const aura = scene.add.ellipse(0, -8, enemy.rank === 'boss' ? 210 : 184, enemy.rank === 'boss' ? 232 : 206, primary, enemy.rank === 'boss' ? 0.13 : 0.08);
+  aura.setBlendMode(Phaser.BlendModes.ADD);
+  container.add(aura);
+  if (!gameStore.profile.settings.reducedMotion) {
+    scene.tweens.add({
+      targets: aura,
+      alpha: enemy.rank === 'boss' ? { from: 0.08, to: 0.2 } : { from: 0.04, to: 0.12 },
+      scaleX: { from: 0.94, to: 1.06 },
+      scaleY: { from: 0.98, to: 1.04 },
+      yoyo: true,
+      repeat: -1,
+      duration: enemy.rank === 'boss' ? 1100 : 1700,
+      ease: 'Sine.easeInOut'
+    });
+  }
+
   graphics.fillStyle(0x070916, 0.96).fillRoundedRect(-86, -96, 172, 190, 6);
   graphics.lineStyle(3, primary, 0.85).strokeRoundedRect(-86, -96, 172, 190, 6);
   graphics.lineStyle(1, accent, 0.28).strokeRoundedRect(-76, -86, 152, 170, 2);
+  if (enemy.rank !== 'normal') {
+    graphics.lineStyle(enemy.rank === 'boss' ? 3 : 2, accent, enemy.rank === 'boss' ? 0.62 : 0.44);
+    graphics.strokeRoundedRect(-96, -106, 192, 210, enemy.rank === 'boss' ? 2 : 4);
+    graphics.fillStyle(primary, 0.18);
+    graphics.fillTriangle(-96, -106, -68, -106, -96, -78);
+    graphics.fillTriangle(96, 104, 68, 104, 96, 76);
+  }
   drawPixelNoise(graphics, primary, visual.shape);
 
-  drawSilhouette(graphics, visual, primary, secondary, accent);
-
-  const glyph = scene.add
-    .text(0, 4, visual.glyph, {
-      fontFamily: 'Courier New, monospace',
-      fontSize: visual.glyph.length > 2 ? '22px' : '34px',
-      color: '#f8fafc',
-      fontStyle: 'bold',
-      align: 'center'
-    })
-    .setOrigin(0.5)
-    .setAlpha(0.95);
-  container.add(glyph);
+  const sprite = createEnemySprite(scene, enemy, visual);
+  container.add(sprite);
+  container.add(createEyePulse(scene, visual.eyeCount, primary, accent));
+  container.setData('enemySprite', sprite);
 
   const scan = scene.add.rectangle(0, -5, 148, 3, primary, 0.28);
   container.add(scan);
-  scene.tweens.add({
-    targets: scan,
-    y: 68,
-    alpha: 0.06,
-    yoyo: true,
-    repeat: -1,
-    duration: 1700,
-    ease: 'Sine.easeInOut'
-  });
+  if (!gameStore.profile.settings.reducedMotion) {
+    scene.tweens.add({
+      targets: scan,
+      y: 68,
+      alpha: 0.06,
+      yoyo: true,
+      repeat: -1,
+      duration: 1700,
+      ease: 'Sine.easeInOut'
+    });
+  }
 
   return container;
+}
+
+export function playEnemyPortraitAnimation(container: Phaser.GameObjects.Container, animation: EnemySpriteAnimation): void {
+  playEnemySpriteAnimation((container.getData('enemySprite') as Phaser.GameObjects.Sprite | undefined) ?? null, animation);
+}
+
+function createEyePulse(scene: Phaser.Scene, count: number, primary: number, accent: number): Phaser.GameObjects.Container {
+  const layer = scene.add.container(0, 0);
+  const positions = count === 1 ? [0] : count === 2 ? [-24, 24] : [-32, 0, 32];
+  positions.forEach((x, index) => {
+    const eye = scene.add.rectangle(x, -22, 18, 3, accent, 0.78).setBlendMode(Phaser.BlendModes.ADD);
+    const core = scene.add.rectangle(x, -22, 8, 2, primary, 0.88).setBlendMode(Phaser.BlendModes.ADD);
+    layer.add([eye, core]);
+    if (!gameStore.profile.settings.reducedMotion) {
+      scene.tweens.add({
+        targets: [eye, core],
+        alpha: { from: 0.32, to: 0.98 },
+        scaleX: { from: 0.72, to: 1.18 },
+        yoyo: true,
+        repeat: -1,
+        delay: index * 140,
+        duration: 620,
+        ease: 'Sine.easeInOut'
+      });
+    }
+  });
+  return layer;
 }
 
 function drawSilhouette(

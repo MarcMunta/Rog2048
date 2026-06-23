@@ -17,7 +17,8 @@ export interface FloatingTextEvent {
   text: string;
   x: number;
   y: number;
-  tone: 'damage' | 'heal' | 'energy' | 'gold' | 'danger' | 'combo';
+  tone: 'damage' | 'heal' | 'energy' | 'gold' | 'danger' | 'combo' | 'blocked' | 'status';
+  anchor?: 'board' | 'enemy' | 'player';
 }
 
 export interface CombatActionResult {
@@ -69,6 +70,7 @@ export interface CombatState {
   eightMergeCounter: number;
   statusEffects: CombatStatusEffects;
   skillStates: SkillState[];
+  recentLogs: string[];
   lastDirection: Direction | null;
   selectionHint: string | null;
 }

@@ -34,7 +34,7 @@ export const SKILLS: SkillDefinition[] = [
   {
     id: 'duplicate',
     name: 'Duplicar',
-    rarity: 'rare',
+    rarity: 'uncommon',
     description: 'Copia una ficha de 32 o menos en una casilla libre.',
     cost: 3,
     cooldown: 3,
@@ -44,7 +44,7 @@ export const SKILLS: SkillDefinition[] = [
   {
     id: 'freeze',
     name: 'Congelar',
-    rarity: 'common',
+    rarity: 'uncommon',
     description: 'Bloquea una ficha 2 turnos para usarla como ancla.',
     cost: 1,
     cooldown: 2,
@@ -64,7 +64,7 @@ export const SKILLS: SkillDefinition[] = [
   {
     id: 'bloodMerge',
     name: 'Fusión Sangrienta',
-    rarity: 'rare',
+    rarity: 'epic',
     description: 'Paga 3 vida para fusionar un par igual en cualquier lugar.',
     cost: 0,
     cooldown: 4,
@@ -74,7 +74,7 @@ export const SKILLS: SkillDefinition[] = [
   {
     id: 'oraclePreview',
     name: 'Vista Oracular',
-    rarity: 'legendary',
+    rarity: 'mythic',
     description: 'Fija las próximas apariciones como 8, 4 y 4.',
     cost: 2,
     cooldown: 4,

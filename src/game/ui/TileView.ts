@@ -31,6 +31,7 @@ export class TileView extends Phaser.GameObjects.Container {
   private readonly frame: Phaser.GameObjects.Graphics;
   private readonly sheen: Phaser.GameObjects.Rectangle;
   private readonly label: Phaser.GameObjects.Text;
+  private readonly runeLabel: Phaser.GameObjects.Text;
   private readonly lockLabel: Phaser.GameObjects.Text;
   private shimmerTween: Phaser.Tweens.Tween | null = null;
   private shimmerValue = 0;
@@ -53,6 +54,15 @@ export class TileView extends Phaser.GameObjects.Container {
         fontStyle: 'bold'
       })
       .setOrigin(0.5);
+    this.runeLabel = scene.add
+      .text(-size * 0.32, size * 0.34, '', {
+        fontFamily: 'Courier New, monospace',
+        fontSize: `${Math.max(9, size * 0.11)}px`,
+        color: this.hex(theme.accent),
+        fontStyle: 'bold'
+      })
+      .setOrigin(0.5)
+      .setAlpha(0.72);
     this.lockLabel = scene.add
       .text(size * 0.31, -size * 0.32, '', {
         fontFamily: 'Courier New, monospace',
@@ -61,7 +71,7 @@ export class TileView extends Phaser.GameObjects.Container {
         fontStyle: 'bold'
       })
       .setOrigin(0.5);
-    this.add([this.glow, this.background, this.frame, this.sheen, this.label, this.lockLabel]);
+    this.add([this.glow, this.background, this.frame, this.sheen, this.runeLabel, this.label, this.lockLabel]);
     scene.add.existing(this);
     this.updateTile(tile, size);
   }
@@ -82,6 +92,12 @@ export class TileView extends Phaser.GameObjects.Container {
     this.label.setFontSize(Math.max(18, size * (valueText.length > 3 ? 0.21 : 0.31)));
     this.label.setColor(theme.text);
     this.label.setShadow(0, 0, this.hex(theme.accent), tile.value >= 64 ? 9 : 3, true, true);
+
+    this.runeLabel.setText(this.runeFor(tile.value));
+    this.runeLabel.setPosition(-size * 0.32, size * 0.34);
+    this.runeLabel.setFontSize(Math.max(9, size * 0.11));
+    this.runeLabel.setColor(this.hex(theme.accent));
+    this.runeLabel.setAlpha(tile.value >= 64 ? 0.9 : 0.62);
 
     this.lockLabel.setPosition(size * 0.31, -size * 0.32);
     this.lockLabel.setFontSize(Math.max(12, size * 0.18));
@@ -114,6 +130,9 @@ export class TileView extends Phaser.GameObjects.Container {
     this.frame.strokePath();
     this.frame.fillStyle(0xffffff, tile.value >= 128 ? 0.08 : 0.045);
     this.frame.fillRect(-half + cut, -half + 7, size * 0.28, Math.max(2, size * 0.025));
+    this.frame.fillStyle(theme.accent, tile.value >= 64 ? 0.18 : 0.1);
+    this.frame.fillTriangle(half - cut, half, half, half - cut, half, half);
+    this.frame.fillTriangle(-half + cut, -half, -half, -half + cut, -half, -half);
     if (tile.cursed) {
       this.frame.lineStyle(2, 0xff4d8d, 0.7);
       this.frame.strokeLineShape(new Phaser.Geom.Line(-half + 9, half - 9, half - 9, -half + 9));
@@ -157,5 +176,11 @@ export class TileView extends Phaser.GameObjects.Container {
 
   private hex(value: number): string {
     return `#${value.toString(16).padStart(6, '0')}`;
+  }
+
+  private runeFor(value: number): string {
+    const tier = Math.max(0, Math.round(Math.log2(value)) - 1);
+    const runes = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];
+    return runes[Math.min(runes.length - 1, tier)];
   }
 }

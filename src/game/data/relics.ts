@@ -19,28 +19,28 @@ export const RELICS: RelicDefinition[] = [
   {
     id: 'overkillAegis',
     name: 'Égida del Exceso',
-    rarity: 'common',
+    rarity: 'uncommon',
     description: 'El daño sobrante al derrotar gana escudo.',
     effect: 'overkillShield'
   },
   {
     id: 'echoRune',
     name: 'Runa Eco',
-    rarity: 'rare',
+    rarity: 'epic',
     description: 'La primera fusión de cada turno repite la mitad de su daño.',
     effect: 'echoFirstMerge'
   },
   {
     id: 'ashFour',
     name: 'Cuatro de Ceniza',
-    rarity: 'rare',
+    rarity: 'epic',
     description: 'Los 4 pueden aparecer malditos. Fusionarlos añade daño.',
     effect: 'cursedFours'
   },
   {
     id: 'bossKey',
     name: 'Llave Menor',
-    rarity: 'legendary',
+    rarity: 'mythic',
     description: 'Los objetivos de jefes bajan un nivel.',
     effect: 'bossTargetDown'
   },
@@ -54,7 +54,7 @@ export const RELICS: RelicDefinition[] = [
   {
     id: 'comboSigil',
     name: 'Sigilo de Racha',
-    rarity: 'common',
+    rarity: 'uncommon',
     description: 'Con combo 3+, las habilidades cuestan 1 menos.',
     effect: 'comboSkillDiscount'
   },
@@ -77,7 +77,7 @@ export const RELICS: RelicDefinition[] = [
   {
     id: 'brokenMask',
     name: 'Máscara Rota',
-    rarity: 'common',
+    rarity: 'uncommon',
     description: 'La penalización por bloqueo de tablero hace 2 menos y elimina una ficha.',
     effect: 'softNoMoves',
     value: 2
@@ -92,7 +92,7 @@ export const RELICS: RelicDefinition[] = [
   {
     id: 'bloodEdge',
     name: 'Filo de Sangre',
-    rarity: 'rare',
+    rarity: 'epic',
     description: 'Tras usar habilidad, el próximo golpe de objetivo suma 3 daño.',
     effect: 'bloodEdge',
     value: 3
@@ -100,7 +100,7 @@ export const RELICS: RelicDefinition[] = [
   {
     id: 'frozenCrown',
     name: 'Corona Helada',
-    rarity: 'common',
+    rarity: 'uncommon',
     description: 'Cada ficha que se desbloquea da 2 escudo.',
     effect: 'unlockShield',
     value: 2
@@ -115,7 +115,7 @@ export const RELICS: RelicDefinition[] = [
   {
     id: 'moonLedger',
     name: 'Libro Lunar',
-    rarity: 'common',
+    rarity: 'uncommon',
     description: 'Los golpes exactos añaden +2 combo.',
     effect: 'exactCombo',
     value: 2
@@ -137,7 +137,7 @@ export const RELICS: RelicDefinition[] = [
   {
     id: 'blackLotus',
     name: 'Loto Negro',
-    rarity: 'legendary',
+    rarity: 'mythic',
     description: 'Con 40% de vida o menos haces 50% más daño.',
     effect: 'lowHpDamage'
   },
@@ -151,7 +151,7 @@ export const RELICS: RelicDefinition[] = [
   {
     id: 'eightGate',
     name: 'Puerta del Ocho',
-    rarity: 'rare',
+    rarity: 'epic',
     description: 'Cada tercera fusión que crea 8 genera un 16 extra.',
     effect: 'thirdEightCreates16'
   },

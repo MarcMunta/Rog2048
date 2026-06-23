@@ -4,7 +4,7 @@ import { AnimationSystem } from '../systems/AnimationSystem';
 import { AudioSystem } from '../systems/AudioSystem';
 import { gameStore } from '../systems/GameStore';
 import { BoardSystem } from '../systems/BoardSystem';
-import { createEnemyPortrait } from '../assets/portraits';
+import { createEnemyPortrait, playEnemyPortraitAnimation } from '../assets/portraits';
 import type { BoardMoveResult, Direction, Position } from '../types/board';
 import type { CombatActionResult, CombatState } from '../types/combat';
 import { TileView } from '../ui/TileView';
@@ -30,6 +30,7 @@ export class CombatScene extends Phaser.Scene {
   private selectingSkillId: string | null = null;
   private locked = false;
   private ending = false;
+  private lastEnemyHpRatio = 1;
   private pointerStart: { x: number; y: number } | null = null;
 
   constructor() {
@@ -40,6 +41,7 @@ export class CombatScene extends Phaser.Scene {
     autoClearUi(this);
     this.cameras.main.setBackgroundColor('#080816');
     this.combat = gameStore.startCombat();
+    this.lastEnemyHpRatio = this.combat.enemy.hp / this.combat.enemy.maxHp;
     this.backdropGraphics = this.add.graphics().setDepth(0);
     this.boardGraphics = this.add.graphics().setDepth(1);
     this.enemyContainer = this.add.container(0, 0).setDepth(2);
@@ -216,7 +218,7 @@ export class CombatScene extends Phaser.Scene {
 
   private applyFeedback(result: CombatActionResult): void {
     result.floating.forEach((item) => {
-      const center = this.cellCenter({ row: item.y, col: item.x });
+      const center = this.floatingPoint(item);
       const color =
         item.tone === 'damage'
           ? '#ffcc66'
@@ -226,13 +228,19 @@ export class CombatScene extends Phaser.Scene {
               ? '#40f6d2'
               : item.tone === 'heal'
                 ? '#a3e635'
-                : '#ff4d8d';
+                : item.tone === 'blocked'
+                  ? '#67e8f9'
+                  : item.tone === 'status'
+                    ? '#b388ff'
+                    : '#ff4d8d';
       AnimationSystem.floatingText(this, center.x, center.y, item.text, color);
     });
     if (result.damage > 0) {
       const enemy = this.enemyContainer.getBounds();
       AnimationSystem.floatingText(this, enemy.centerX, enemy.y - 14, `-${result.damage}`, '#ffcc66');
+      this.playPlayerAttack(result);
       this.flashEnemy();
+      this.updateBossReaction();
       AudioSystem.play('damage');
     }
     if (result.enemyAttacked) this.playEnemyAttack();
@@ -246,12 +254,33 @@ export class CombatScene extends Phaser.Scene {
       AnimationSystem.floatingText(this, center.x + 34, center.y + 42, `COMBO x${result.combo}`, '#40f6d2');
       AnimationSystem.mergeStreak(this, center.x + 34, center.y + 42, 0x40f6d2);
     }
-    if (result.bigHit) AnimationSystem.shake(this, 0.008, 160);
+    if (result.bigHit) {
+      AnimationSystem.hitStop(this, 80);
+      AnimationSystem.shake(this, 0.008, 160);
+    }
+  }
+
+  private floatingPoint(item: CombatActionResult['floating'][number]): { x: number; y: number } {
+    if (item.anchor === 'enemy') {
+      const enemy = this.enemyContainer.getBounds();
+      return { x: enemy.centerX, y: enemy.y - 14 };
+    }
+    if (item.anchor === 'player') {
+      return {
+        x: Math.max(74, this.boardLayout.x - 86),
+        y: this.boardLayout.y + this.boardLayout.cell * 0.35
+      };
+    }
+    return this.cellCenter({ row: item.y, col: item.x });
   }
 
   private checkEnd(): void {
     if (this.ending || this.combat.status === 'active') return;
     this.ending = true;
+    if (this.combat.status === 'won') {
+      playEnemyPortraitAnimation(this.enemyContainer, 'defeat');
+      AnimationSystem.bossPulse(this, this.enemyContainer.x, this.enemyContainer.y, this.combat.enemy.palette.primary);
+    }
     this.time.delayedCall(760, () => {
       const next = gameStore.finishCombat();
       if (next === 'reward') transitionTo(this, 'RewardScene');
@@ -264,7 +293,7 @@ export class CombatScene extends Phaser.Scene {
     const width = this.scale.width;
     const height = this.scale.height;
     const isMobile = width < 760;
-    const topReserve = isMobile ? (width < 560 ? 244 : 210) : 176;
+    const topReserve = isMobile ? (width < 560 ? 348 : 236) : 176;
     const bottomReserve = isMobile ? 148 : 126;
     const availableHeight = Math.max(280, height - topReserve - bottomReserve);
     const sideReserve = isMobile ? 18 : 260;
@@ -279,7 +308,7 @@ export class CombatScene extends Phaser.Scene {
     this.drawBoard();
 
     const enemyX = isMobile ? width / 2 : Math.max(250, width / 2 - 380);
-    const enemyY = isMobile ? (width < 560 ? 212 : 168) : 118;
+    const enemyY = isMobile ? (width < 560 ? 232 : 178) : 118;
     this.enemyContainer.setPosition(enemyX, enemyY);
     this.enemyContainer.setScale(this.enemyScale());
     this.syncBoardViews();
@@ -295,6 +324,22 @@ export class CombatScene extends Phaser.Scene {
     for (let x = 0; x < width; x += 28) this.backdropGraphics.fillRect(x, 0, 1, height);
     for (let y = 0; y < height; y += 28) this.backdropGraphics.fillRect(0, y, width, 1);
     this.backdropGraphics.fillStyle(actColor, 0.08).fillCircle(width / 2, 130, Math.min(width, 760) * 0.36);
+    this.backdropGraphics.lineStyle(2, actColor, this.combat.rank === 'boss' ? 0.22 : 0.12);
+    this.backdropGraphics.strokeCircle(width / 2, 130, Math.min(width, 760) * 0.22);
+    this.backdropGraphics.strokeCircle(width / 2, 130, Math.min(width, 760) * 0.31);
+    this.backdropGraphics.lineStyle(1, 0xffcc66, 0.09);
+    for (let i = 0; i < 8; i += 1) {
+      const angle = (Math.PI * 2 * i) / 8;
+      const radius = Math.min(width, 760) * 0.31;
+      this.backdropGraphics.lineBetween(width / 2, 130, width / 2 + Math.cos(angle) * radius, 130 + Math.sin(angle) * radius);
+    }
+    if (this.boardLayout) {
+      const centerX = this.boardLayout.x + this.boardLayout.size / 2;
+      const centerY = this.boardLayout.y + this.boardLayout.size / 2;
+      this.backdropGraphics.lineStyle(1, actColor, 0.16);
+      this.backdropGraphics.lineBetween(width / 2, 130, centerX, centerY);
+      this.backdropGraphics.fillStyle(actColor, 0.06).fillCircle(centerX, centerY, this.boardLayout.size * 0.58);
+    }
     this.backdropGraphics.fillStyle(0x000000, 0.28).fillRect(0, height - 150, width, 150);
   }
 
@@ -317,15 +362,51 @@ export class CombatScene extends Phaser.Scene {
 
   private buildEnemy(): void {
     this.enemyContainer.removeAll(true);
+    if (this.combat.rank === 'boss') this.enemyContainer.add(this.createBossAura());
     this.enemyContainer.add(createEnemyPortrait(this, this.combat.enemy));
-    this.tweens.add({
-      targets: this.enemyContainer,
-      y: '+=8',
-      yoyo: true,
-      repeat: -1,
-      duration: 1300,
-      ease: 'Sine.easeInOut'
-    });
+    if (!gameStore.profile.settings.reducedMotion) {
+      this.tweens.add({
+        targets: this.enemyContainer,
+        y: '+=8',
+        yoyo: true,
+        repeat: -1,
+        duration: 1300,
+        ease: 'Sine.easeInOut'
+      });
+    }
+  }
+
+  private createBossAura(): Phaser.GameObjects.Graphics {
+    const aura = this.add.graphics();
+    const primary = this.combat.enemy.palette.primary;
+    const accent = this.combat.enemy.palette.accent;
+    aura.lineStyle(2, primary, 0.52).strokeCircle(0, -10, 118);
+    aura.lineStyle(1, accent, 0.34).strokeCircle(0, -10, 94);
+    aura.fillStyle(primary, 0.22);
+    for (let i = 0; i < 12; i += 1) {
+      const angle = (Math.PI * 2 * i) / 12;
+      const inner = 94;
+      const outer = i % 2 === 0 ? 126 : 112;
+      aura.fillTriangle(
+        Math.cos(angle - 0.08) * inner,
+        -10 + Math.sin(angle - 0.08) * inner,
+        Math.cos(angle) * outer,
+        -10 + Math.sin(angle) * outer,
+        Math.cos(angle + 0.08) * inner,
+        -10 + Math.sin(angle + 0.08) * inner
+      );
+    }
+    aura.setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.78);
+    if (!gameStore.profile.settings.reducedMotion) {
+      this.tweens.add({
+        targets: aura,
+        angle: 360,
+        repeat: -1,
+        duration: 9000,
+        ease: 'Linear'
+      });
+    }
+    return aura;
   }
 
   private playBossEntrance(): void {
@@ -342,7 +423,7 @@ export class CombatScene extends Phaser.Scene {
   }
 
   private enemyScale(): number {
-    if (this.scale.width < 560) return 0.46;
+    if (this.scale.width < 560) return 0.5;
     if (this.scale.width < 760) return 0.52;
     return 0.64;
   }
@@ -408,6 +489,7 @@ export class CombatScene extends Phaser.Scene {
   }
 
   private flashEnemy(): void {
+    playEnemyPortraitAnimation(this.enemyContainer, 'hit');
     const flash = this.add.rectangle(0, -12, 176, 220, 0xffffff, 0.7);
     this.enemyContainer.add(flash);
     this.tweens.add({
@@ -424,9 +506,43 @@ export class CombatScene extends Phaser.Scene {
     });
   }
 
+  private playPlayerAttack(result: CombatActionResult): void {
+    const source = result.floating.find((item) => item.tone === 'damage' && item.anchor !== 'enemy');
+    const start = source ? this.cellCenter({ row: source.y, col: source.x }) : this.boardCenter();
+    const enemy = this.enemyContainer.getBounds();
+    const color = result.bigHit ? 0xffcc66 : this.combat.enemy.palette.primary;
+    AnimationSystem.energyBolt(this, start.x, start.y, enemy.centerX, enemy.centerY, color, result.bigHit);
+  }
+
+  private updateBossReaction(): void {
+    if (this.combat.rank !== 'boss') {
+      this.lastEnemyHpRatio = this.combat.enemy.hp / this.combat.enemy.maxHp;
+      return;
+    }
+    const currentRatio = this.combat.enemy.hp / this.combat.enemy.maxHp;
+    const crossedPhase = (this.lastEnemyHpRatio > 0.66 && currentRatio <= 0.66) || (this.lastEnemyHpRatio > 0.33 && currentRatio <= 0.33);
+    this.lastEnemyHpRatio = currentRatio;
+    if (!crossedPhase || this.combat.enemy.hp <= 0) return;
+    const enemy = this.enemyContainer.getBounds();
+    playEnemyPortraitAnimation(this.enemyContainer, 'phase');
+    AnimationSystem.floatingText(this, enemy.centerX, enemy.y - 42, 'Furia', '#ff4d8d');
+    AnimationSystem.bossPulse(this, enemy.centerX, enemy.centerY, this.combat.enemy.palette.primary);
+    AnimationSystem.shake(this, 0.01, 220);
+    this.tweens.add({
+      targets: this.enemyContainer,
+      scale: this.enemyScale() * 1.16,
+      yoyo: true,
+      duration: AnimationSystem.duration(130),
+      ease: 'Quad.easeOut'
+    });
+  }
+
   private playEnemyAttack(): void {
+    playEnemyPortraitAnimation(this.enemyContainer, 'attack');
     const originX = this.enemyContainer.x;
     const targetY = this.boardLayout.y + this.boardLayout.size * 0.2;
+    const center = this.boardCenter();
+    AnimationSystem.attackSlash(this, this.enemyContainer.x, this.enemyContainer.y, center.x, center.y, this.combat.enemy.palette.primary);
     this.tweens.add({
       targets: this.enemyContainer,
       x: this.scale.width / 2 + (this.enemyContainer.x < this.scale.width / 2 ? 18 : -18),
@@ -440,7 +556,15 @@ export class CombatScene extends Phaser.Scene {
         this.layout();
       }
     });
+    AnimationSystem.hitSparks(this, center.x, center.y, this.combat.enemy.palette.primary, false);
     AnimationSystem.shake(this, 0.006, 120);
+  }
+
+  private boardCenter(): { x: number; y: number } {
+    return {
+      x: this.boardLayout.x + this.boardLayout.size / 2,
+      y: this.boardLayout.y + this.boardLayout.size / 2
+    };
   }
 
   private wait(ms: number): Promise<void> {

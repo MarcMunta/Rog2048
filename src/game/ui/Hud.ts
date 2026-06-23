@@ -14,7 +14,7 @@ export function combatHud(run: RunState, combat: CombatState, selectingSkillId: 
   const relics = RelicSystem.definitions(run)
     .map(
       (relic) => `<span class="relic-chip rarity-${relic.rarity}" ${tooltip(`${relic.name}: ${relic.description}`)}>
-        ${relicIconSvg(relic.id, relic.name)}
+        ${relicIconSvg(relic.id, relic.name, relic.rarity)}
       </span>`
     )
     .join('');
@@ -27,6 +27,9 @@ export function combatHud(run: RunState, combat: CombatState, selectingSkillId: 
       : ''
   ].join('');
   const preview = combat.board.spawnPreview.map((value) => `<i>${value}</i>`).join('');
+  const logs = combat.recentLogs.length
+    ? combat.recentLogs.map((line) => `<span>${escapeHtml(line)}</span>`).join('')
+    : '<span>Sin eventos recientes.</span>';
 
   return `<section class="combat-shell">
     <header class="combat-topbar">
@@ -68,6 +71,11 @@ export function combatHud(run: RunState, combat: CombatState, selectingSkillId: 
       <span class="rail-title">Talismanes</span>
       <div class="relic-list">${relics}</div>
     </aside>
+
+    <details class="combat-log" ${combat.recentLogs.length ? 'open' : ''}>
+      <summary>Registro</summary>
+      <div>${logs}</div>
+    </details>
 
     <footer class="skill-dock">
       <div class="dock-title">Habilidades</div>

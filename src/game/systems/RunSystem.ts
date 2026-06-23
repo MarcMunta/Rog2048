@@ -2,6 +2,7 @@ import { BALANCE } from '../data/balancing';
 import { getBossForAct } from '../data/bosses';
 import { getClassById } from '../data/classes';
 import { RELICS, getRelicById } from '../data/relics';
+import { rewardRarityWeights } from '../data/rarities';
 import { SKILLS, getSkillById } from '../data/skills';
 import type { MapNodeState, NodeType, PendingReward, RewardChoice, RunMapState, RunState } from '../types/run';
 import { Random, clamp } from '../utils/random';
@@ -121,11 +122,7 @@ export class RunSystem {
     const forceRare = (run.flags.forceRareRelic ?? 0) > 0;
     if (forceRare) run.flags.forceRareRelic -= 1;
 
-    const rarity = source === 'elite' || forceRare ? 'rare' : rng.weighted([
-      { item: 'common' as const, weight: 68 },
-      { item: 'rare' as const, weight: 26 },
-      { item: 'legendary' as const, weight: 6 }
-    ]);
+    const rarity = forceRare ? 'rare' : rng.weighted(rewardRarityWeights(source === 'elite'));
 
     const availableRelics = RELICS.filter((relic) => !run.relicIds.includes(relic.id));
     const availableSkills = SKILLS.filter((skill) => !run.skillIds.includes(skill.id));

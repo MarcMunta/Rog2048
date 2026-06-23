@@ -1,3 +1,5 @@
+import type { Rarity } from '../types/common';
+
 export type IconId =
   | 'abacus'
   | 'mirror'
@@ -125,8 +127,31 @@ export function iconSvg(icon: IconId, label = ''): string {
   </svg>`;
 }
 
-export function relicIconSvg(relicId: string, label = ''): string {
-  return iconSvg(RELIC_ICONS[relicId] ?? 'prism', label);
+const MEDALLION_SHARDS: Record<Rarity, string> = {
+  common: '<path d="M5 19h2M17 5h2"/>',
+  uncommon: '<path d="M4 17h3M17 7h3M12 3v2"/>',
+  rare: '<path d="M4 12h3M17 12h3M12 3v3M12 18v3"/>',
+  epic: '<path d="M4 7l2 2M18 7l-2 2M4 17l2-2M18 17l-2-2"/>',
+  legendary: '<path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M19 5l-2 2"/>',
+  mythic: '<path d="M12 1v4M12 19v4M1 12h4M19 12h4M4 4l3 3M20 4l-3 3M4 20l3-3M20 20l-3-3"/>'
+};
+
+export function relicIconSvg(relicId: string, label = '', rarity?: Rarity): string {
+  const icon = RELIC_ICONS[relicId] ?? 'prism';
+  const rarityClass = rarity ? ` rarity-${rarity}` : '';
+  const shards = rarity ? MEDALLION_SHARDS[rarity] : MEDALLION_SHARDS.common;
+  return `<svg class="game-icon relic-medallion${rarityClass}" viewBox="0 0 24 24" aria-hidden="${
+    label ? 'false' : 'true'
+  }" role="img">
+    ${label ? `<title>${label}</title>` : ''}
+    <path class="medallion-halo" d="M12 2 20 6v12l-8 4-8-4V6l8-4Z" />
+    <path class="medallion-frame" d="M12 3 19 7v10l-7 4-7-4V7l7-4Z" />
+    <path class="medallion-core" d="M12 6 16 8.5v7L12 18l-4-2.5v-7L12 6Z" />
+    <g class="medallion-sigil" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="square" stroke-linejoin="miter">
+      ${ICON_PATHS[icon]}
+    </g>
+    <g class="medallion-shards" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="square">${shards}</g>
+  </svg>`;
 }
 
 export function skillIconSvg(skillId: string, label = ''): string {

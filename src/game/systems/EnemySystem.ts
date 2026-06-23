@@ -1,6 +1,7 @@
 import { BOSSES, getBossForAct } from '../data/bosses';
 import { ELITE_ENEMIES, NORMAL_ENEMIES } from '../data/enemies';
 import { BoardSystem } from './BoardSystem';
+import { CombatFeedbackSystem } from './CombatFeedbackSystem';
 import type { CombatActionResult, CombatState } from '../types/combat';
 import type { EnemyBehaviorType, EnemyDefinition, EnemyInstance, EnemyRank } from '../types/enemy';
 import type { RunState } from '../types/run';
@@ -56,23 +57,23 @@ export class EnemySystem {
       if (!behavior.every || combat.enemy.specialCounter % behavior.every !== 0) return;
       if (behavior.type === 'mirrorTarget') {
         this.rerollTarget(combat.enemy, rng);
-        result.logs.push(`${combat.enemy.name} cambia el objetivo.`);
+        CombatFeedbackSystem.log(result, `${combat.enemy.name} cambia el objetivo.`);
       }
       if (behavior.type === 'lockTile') {
         const position = BoardSystem.lockRandomTile(combat.board, rng, behavior.amount ?? 2);
-        if (position) result.logs.push(`${combat.enemy.name} bloquea una ficha.`);
+        if (position) CombatFeedbackSystem.log(result, `${combat.enemy.name} bloquea una ficha.`);
       }
       if (behavior.type === 'curseValue') {
         const position = BoardSystem.curseRandomTile(combat.board, rng);
-        if (position) result.logs.push(`${combat.enemy.name} maldice una ficha.`);
+        if (position) CombatFeedbackSystem.log(result, `${combat.enemy.name} maldice una ficha.`);
       }
       if (behavior.type === 'bossEntropy') {
         if (rng.chance(0.5)) {
           BoardSystem.curseRandomTile(combat.board, rng);
-          result.logs.push('El núcleo derrama entropía.');
+          CombatFeedbackSystem.log(result, 'El núcleo derrama entropía.');
         } else {
           BoardSystem.lockRandomTile(combat.board, rng, 2);
-          result.logs.push('El núcleo fija el tablero.');
+          CombatFeedbackSystem.log(result, 'El núcleo fija el tablero.');
         }
       }
     });
@@ -80,7 +81,7 @@ export class EnemySystem {
     if (this.hasBehavior(combat.enemy, 'comboTax') && result.combo < 2) {
       const amount = this.behaviorAmount(combat.enemy, 'comboTax', 1);
       combat.player.energy = Math.max(0, combat.player.energy - amount);
-      result.logs.push('El diezmo consume energía.');
+      CombatFeedbackSystem.log(result, 'El diezmo consume energía.');
     }
   }
 
@@ -92,7 +93,15 @@ export class EnemySystem {
     combat.player.hp = clamp(combat.player.hp - damage, 0, combat.player.maxHp);
     result.enemyAttacked = true;
     result.playerDamaged += damage;
-    result.logs.push(`${combat.enemy.name} ataca: ${damage} daño.`);
+    if (damage > 0) {
+      CombatFeedbackSystem.log(result, `${combat.enemy.name} ataca: ${damage} daño.`);
+    } else if (blocked > 0) {
+      CombatFeedbackSystem.playerBlocked(result);
+      CombatFeedbackSystem.log(result, `${combat.enemy.name} ataca: Bloqueado.`);
+    } else {
+      CombatFeedbackSystem.playerBlocked(result, 'Sin efecto');
+      CombatFeedbackSystem.log(result, `${combat.enemy.name} ataca: Sin efecto.`);
+    }
   }
 
   static allBosses(): EnemyDefinition[] {

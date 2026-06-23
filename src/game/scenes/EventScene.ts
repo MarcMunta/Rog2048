@@ -33,6 +33,7 @@ export class EventScene extends Phaser.Scene {
     const root = setUi(`<main class="screen event-screen">
       <section class="screen-inner event-shell">
         <div class="scene-sigil" aria-hidden="true">?</div>
+        <div class="event-portal" aria-hidden="true"></div>
         <div class="top-actions">
           <div>
             <span class="eyebrow">Evento</span>

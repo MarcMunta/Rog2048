@@ -1,4 +1,5 @@
 import { RELICS, getRelicById } from '../data/relics';
+import { itemPrice } from '../data/rarities';
 import { SHOP_UPGRADES, type ShopItemDefinition } from '../data/shops';
 import { SKILLS, getSkillById } from '../data/skills';
 import { RelicSystem } from './RelicSystem';
@@ -18,7 +19,7 @@ export class EconomySystem {
         type: 'relic',
         title: relic.name,
         description: relic.description,
-        price: relic.rarity === 'legendary' ? 68 : relic.rarity === 'rare' ? 46 : 28,
+        price: itemPrice(relic.rarity, 'relic'),
         rarity: relic.rarity,
         refId: relic.id
       });
@@ -31,7 +32,7 @@ export class EconomySystem {
         type: 'skill',
         title: skill.name,
         description: skill.description,
-        price: skill.rarity === 'legendary' ? 62 : skill.rarity === 'rare' ? 40 : 24,
+        price: itemPrice(skill.rarity, 'skill'),
         rarity: skill.rarity,
         refId: skill.id
       });

@@ -4,6 +4,7 @@ import { ALL_ENEMIES } from '../data/enemies';
 import { BOSSES } from '../data/bosses';
 import { RELICS } from '../data/relics';
 import { gameStore } from '../systems/GameStore';
+import { iconSvg, relicIconSvg } from '../assets/icons';
 import { bindClick, escapeHtml, setUi } from '../utils/dom';
 import { pixelButton } from '../ui/PixelButton';
 import { rarityLabel } from '../ui/RewardCard';
@@ -21,6 +22,9 @@ export class CollectionScene extends Phaser.Scene {
     const relics = RELICS.map((relic) => {
       const known = profile.discoveredRelics.includes(relic.id);
       return `<article class="collection-card rarity-${relic.rarity}">
+        <span class="reward-icon collection-relic-icon">${
+          known ? relicIconSvg(relic.id, relic.name, relic.rarity) : iconSvg('locked', 'Bloqueado')
+        }</span>
         <span class="card-rarity">${rarityLabel(relic.rarity)}</span>
         <strong>${known ? escapeHtml(relic.name) : '???'}</strong>
         <span>${known ? escapeHtml(relic.description) : 'Descúbrelo durante una run.'}</span>
