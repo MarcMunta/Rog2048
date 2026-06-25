@@ -3063,3 +3063,416 @@ canvas {
     line-height: 1.45;
   }
 }
+
+/* v0.9 mobile-first arcade altar pass */
+.screen-inner {
+  opacity: 1 !important;
+}
+
+.menu-screen {
+  place-items: stretch;
+  padding: clamp(14px, 3vw, 34px);
+}
+
+.menu-screen .screen-inner {
+  min-height: min(820px, calc(100vh - 28px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: clamp(18px, 4vw, 42px);
+  align-items: center;
+  padding: clamp(22px, 5vw, 56px);
+  isolation: isolate;
+  animation: none;
+}
+
+.menu-screen .title-stack {
+  max-width: 780px;
+  align-self: center;
+  z-index: 2;
+}
+
+.menu-screen .title-stack h1 {
+  font-size: clamp(52px, 12vw, 126px);
+  color: #f8fafc;
+  text-shadow:
+    0 0 18px rgba(64, 246, 210, 0.72),
+    6px 6px 0 rgba(255, 77, 141, 0.46),
+    -4px 8px 0 rgba(255, 204, 102, 0.22);
+}
+
+.menu-screen .title-stack p {
+  max-width: 560px;
+  color: #dbeafe;
+  font-size: clamp(15px, 2vw, 20px);
+}
+
+.menu-screen .button-column {
+  z-index: 3;
+  justify-self: end;
+  width: min(360px, 100%);
+  padding: 12px;
+  background:
+    linear-gradient(135deg, rgba(64, 246, 210, 0.15), transparent 42%),
+    rgba(5, 7, 18, 0.72);
+  border: 1px solid rgba(64, 246, 210, 0.26);
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.34),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  clip-path: polygon(0 14px, 14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px));
+}
+
+.menu-crest {
+  position: absolute;
+  right: clamp(26px, 9vw, 130px);
+  top: clamp(28px, 8vw, 108px);
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, clamp(48px, 8vw, 86px));
+  gap: 10px;
+  color: rgba(255, 204, 102, 0.92);
+  pointer-events: none;
+  transform: rotate(8deg);
+}
+
+.menu-crest i {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  font-size: clamp(22px, 4vw, 44px);
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 204, 102, 0.18), transparent 50%),
+    rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 204, 102, 0.32);
+  text-shadow: 0 0 16px currentColor;
+  clip-path: polygon(0 10px, 10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+}
+
+.pixel-button,
+.skill-button,
+.map-node,
+.reward-card,
+.shop-card,
+.event-choice,
+.rest-card,
+.class-card {
+  touch-action: manipulation;
+}
+
+.pixel-button:active:not(:disabled),
+.skill-button:active,
+.map-node:active,
+.reward-card:active,
+.shop-card:active,
+.event-choice:active,
+.rest-card:active,
+.class-card:active {
+  transform: translateY(2px) scale(0.99);
+}
+
+@media (max-width: 760px) {
+  .menu-screen {
+    padding: 10px;
+  }
+
+  .menu-screen .screen-inner {
+    min-height: calc(100vh - 20px);
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    align-content: stretch;
+    gap: 18px;
+    padding: 18px;
+  }
+
+  .menu-screen .title-stack {
+    align-self: start;
+    padding-top: 22px;
+  }
+
+  .menu-screen .title-stack h1 {
+    font-size: clamp(48px, 18vw, 78px);
+    line-height: 0.92;
+  }
+
+  .menu-screen .title-stack p {
+    font-size: 14px;
+  }
+
+  .menu-screen .button-column {
+    align-self: end;
+    justify-self: stretch;
+    width: 100%;
+  }
+
+  .menu-crest {
+    right: 16px;
+    top: 16px;
+    grid-template-columns: repeat(2, 38px);
+    gap: 6px;
+    opacity: 0.44;
+  }
+
+  .menu-crest i {
+    font-size: 18px;
+  }
+
+  .combat-topbar {
+    top: 6px;
+    left: 8px;
+    width: calc(100vw - 16px);
+    min-height: 118px;
+    transform: none;
+    grid-template-columns: minmax(0, 1fr) 76px;
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .enemy-title {
+    gap: 2px;
+  }
+
+  .enemy-title strong {
+    font-size: 16px;
+    line-height: 1.1;
+  }
+
+  .enemy-title small,
+  .enemy-core small,
+  .enemy-vitals small {
+    display: none;
+  }
+
+  .enemy-core {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-content: center;
+    padding: 4px;
+    background:
+      radial-gradient(circle, rgba(255, 204, 102, 0.16), transparent 58%),
+      rgba(255, 204, 102, 0.045);
+    border: 1px solid rgba(255, 204, 102, 0.22);
+  }
+
+  .enemy-core strong {
+    font-size: 34px;
+  }
+
+  .intent-panel {
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 42px;
+    padding: 5px 7px;
+  }
+
+  .intent-panel strong {
+    font-size: 11px;
+  }
+
+  .intent-panel small {
+    font-size: 10px;
+  }
+
+  .enemy-vitals {
+    grid-column: 1 / -1;
+    text-align: left;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .enemy-vitals .bar {
+    margin-top: 0;
+  }
+
+  .player-stack {
+    top: 132px;
+    left: 8px;
+    width: 132px;
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .stat-panel strong {
+    font-size: 22px;
+  }
+
+  .stat-grid-mini {
+    gap: 4px;
+  }
+
+  .stat-grid-mini span,
+  .turn-chip,
+  .preview-chip {
+    min-height: 28px;
+    padding: 4px 5px;
+    font-size: 12px;
+  }
+
+  .preview-chip {
+    display: none;
+  }
+
+  .skill-dock {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: 8px;
+    width: auto !important;
+    transform: none !important;
+    z-index: 25;
+    padding: 8px;
+  }
+
+  .skill-dock .skill-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .skill-dock .skill-button {
+    min-width: 0;
+    min-height: 56px;
+    grid-template-columns: 30px minmax(0, 1fr) 38px;
+    padding: 8px;
+  }
+
+  .skill-copy strong {
+    font-size: 13px;
+  }
+
+  .skill-cost {
+    min-width: 36px;
+  }
+
+  .combat-log {
+    left: 8px;
+    right: 8px;
+    bottom: 170px;
+    width: auto;
+    max-height: 58px;
+    z-index: 24;
+    padding: 7px 9px;
+  }
+
+  .combat-log[open] {
+    width: auto;
+    max-height: 76px;
+  }
+
+  .combat-log div {
+    display: flex;
+    gap: 8px;
+    max-height: 34px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+  }
+
+  .combat-log span {
+    flex: 0 0 auto;
+    max-width: 82vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .combat-tutorial {
+    bottom: 174px;
+  }
+
+  .map-screen .screen-inner {
+    padding: 10px 8px 126px;
+  }
+
+  .map-frame {
+    height: calc(100vh - 132px);
+  }
+
+  .map-board {
+    padding-bottom: 108px;
+  }
+
+  .map-layers {
+    min-height: 900px;
+    grid-template-rows: repeat(6, 134px);
+  }
+
+  .map-node.available,
+  .map-node.selected {
+    width: min(142px, 39vw);
+    height: 118px;
+  }
+
+  .map-detail {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    max-height: 184px;
+    padding: 10px;
+  }
+
+  .map-detail-card {
+    gap: 7px;
+  }
+
+  .map-detail-heading {
+    grid-template-columns: 40px 1fr;
+  }
+
+  .detail-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .map-detail h3 {
+    font-size: 18px;
+    line-height: 1.05;
+  }
+
+  .map-detail p {
+    display: -webkit-box;
+    max-height: 40px;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .map-detail .pixel-button {
+    min-height: 44px;
+  }
+
+  .reward-card,
+  .shop-card,
+  .event-choice,
+  .rest-card,
+  .collection-card,
+  .class-card {
+    min-height: 138px;
+    padding: 14px;
+  }
+}
+
+@media (max-width: 430px) {
+  .combat-log {
+    bottom: 166px;
+  }
+
+  .skill-dock .skill-button {
+    min-height: 54px;
+  }
+
+  .skill-icon {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-orbit,
+  .menu-crest,
+  .map-node.available .node-aura,
+  .intent-panel.danger {
+    animation: none !important;
+  }
+}

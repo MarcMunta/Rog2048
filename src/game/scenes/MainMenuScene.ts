@@ -19,6 +19,9 @@ export class MainMenuScene extends Phaser.Scene {
     const root = setUi(`<main class="screen menu-screen">
       <section class="screen-inner menu-grid">
         <div class="menu-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="menu-crest" aria-hidden="true">
+          <i>2</i><i>0</i><i>4</i><i>8</i>
+        </div>
         <div class="title-stack">
           <h1>Rog2048</h1>
           <p>Fusiones, objetivos letales y talismanes que rompen reglas.</p>
