@@ -31,8 +31,10 @@ export function combatHud(run: RunState, combat: CombatState, selectingSkillId: 
   const logs = combat.recentLogs.length
     ? combat.recentLogs.map((line) => `<span>${escapeHtml(line)}</span>`).join('')
     : '<span>Sin eventos recientes.</span>';
+  const logState = combat.recentLogs.length ? 'has-events' : 'is-empty';
+  const logOpen = combat.recentLogs.length && combat.turn <= 2 ? 'open' : '';
 
-  return `<section class="combat-shell">
+  return `<section class="combat-shell ${showTutorial ? 'has-tutorial' : ''}">
     <header class="combat-topbar">
       <div class="enemy-title">
         <span class="eyebrow">${rankLabel(combat.rank)}</span>
@@ -78,15 +80,16 @@ export function combatHud(run: RunState, combat: CombatState, selectingSkillId: 
       <div class="relic-list">${relics}</div>
     </aside>
 
-    <details class="combat-log" ${combat.recentLogs.length ? 'open' : ''}>
-      <summary>Registro</summary>
+    <details class="combat-log ${logState}" ${logOpen}>
+      <summary><span>Registro</span><b>${combat.recentLogs.length}</b></summary>
       <div>${logs}</div>
     </details>
 
     <footer class="skill-dock">
-      <div class="dock-title">Habilidades</div>
+      <div class="dock-title"><span>Habilidades</span><i>${combat.player.energy}/${combat.player.maxEnergy}E</i></div>
       <div class="skill-row">${skills}</div>
     </footer>
+    ${showTutorial ? '' : '<div class="mobile-combat-hint">Desliza fichas · toca una habilidad cuando brille</div>'}
     ${showTutorial ? combatTutorial() : ''}
     ${
       selectingSkillId
@@ -110,14 +113,20 @@ function skillButton(run: RunState, combat: CombatState, skillId: string, select
           ? 'Energia insuficiente.'
           : '';
   const label = state && state.cooldownLeft > 0 ? `${state.cooldownLeft}` : `${cost}E`;
-  return `<button class="skill-button rarity-${skill.rarity} ${selectingSkillId === skill.id ? 'selecting' : ''} ${
+  const ariaLabel = `${skill.name}. ${skill.description} Coste ${label}.`;
+  return `<button type="button" class="skill-button rarity-${skill.rarity} ${selectingSkillId === skill.id ? 'selecting' : ''} ${
     disabled ? 'is-disabled' : ''
-  }" data-skill-id="${skill.id}" data-disabled-reason="${escapeHtml(reason)}" aria-disabled="${disabled ? 'true' : 'false'}" ${tooltip(
+  }" data-skill-id="${skill.id}" data-rarity="${skill.rarity}" data-disabled-reason="${escapeHtml(reason)}" aria-label="${escapeHtml(
+    ariaLabel
+  )}" aria-disabled="${disabled ? 'true' : 'false'}" ${tooltip(
     disabled && reason ? `${skill.description} ${reason}` : skill.description
   )}>
     <span class="skill-icon">${skillIconSvg(skill.id, skill.name)}</span>
-    <span class="skill-copy"><strong>${escapeHtml(skill.name)}</strong><small>${shortSkillText(skill.description)}</small></span>
+    <span class="skill-copy"><strong class="skill-name">${escapeHtml(skill.name)}</strong><small class="skill-description">${shortSkillText(
+      skill.description
+    )}</small></span>
     <span class="skill-cost">${label}</span>
+    <span class="skill-rune" aria-hidden="true"></span>
   </button>`;
 }
 

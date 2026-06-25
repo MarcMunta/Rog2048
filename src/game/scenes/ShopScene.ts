@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { EconomySystem } from '../systems/EconomySystem';
+import { RelicSystem } from '../systems/RelicSystem';
 import { gameStore } from '../systems/GameStore';
 import { AudioSystem } from '../systems/AudioSystem';
 import { bindClick, escapeHtml, setUi, showToast } from '../utils/dom';
@@ -10,6 +11,8 @@ import type { ShopItemDefinition } from '../data/shops';
 import { autoClearUi, sceneBackground, transitionTo } from './sceneHelpers';
 
 export class ShopScene extends Phaser.Scene {
+  private purchaseLocked = false;
+
   constructor() {
     super('ShopScene');
   }
@@ -27,7 +30,9 @@ export class ShopScene extends Phaser.Scene {
       transitionTo(this, 'MainMenuScene');
       return;
     }
+    this.purchaseLocked = false;
     const offers = EconomySystem.offers(run);
+    const hasDiscount = RelicSystem.hasEffect(run, 'shopDiscount');
     const cards = offers
       .map((item) => {
         const sold = Boolean(run.flags[EconomySystem.purchaseFlag(run, item.id)]);
@@ -39,7 +44,7 @@ export class ShopScene extends Phaser.Scene {
           <span class="card-rarity">${rarityLabel(item.rarity)}</span>
           <strong>${escapeHtml(item.title)}</strong>
           <span>${escapeHtml(item.description)}</span>
-          <b class="price-tag">${item.price} oro</b>
+          <div class="price-line"><b class="price-tag">${item.price} oro</b>${hasDiscount ? '<em class="discount-rune">-15%</em>' : ''}</div>
           ${pixelButton({ label: sold ? 'Comprado' : unaffordable ? 'Sin oro' : 'Comprar', data: { item: item.id }, disabled: sold || unaffordable })}
         </article>`;
       })
@@ -60,9 +65,10 @@ export class ShopScene extends Phaser.Scene {
     </main>`);
 
     bindClick(root, '.shop-card .pixel-button', (button) => {
-      if (button.hasAttribute('disabled')) return;
+      if (this.purchaseLocked || button.hasAttribute('disabled')) return;
       const item = offers.find((offer) => offer.id === button.dataset.item);
       if (!item) return;
+      this.purchaseLocked = true;
       button.setAttribute('disabled', 'disabled');
       button.closest<HTMLElement>('.shop-card')?.classList.add('is-selected');
       this.time.delayedCall(150, () => {

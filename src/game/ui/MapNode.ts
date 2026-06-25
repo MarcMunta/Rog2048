@@ -41,23 +41,41 @@ export function iconFor(type: MapNodeState['type']): string {
 
 export function mapNodeDetail(node: MapNodeState, available: boolean): string {
   const title = RunSystem.nodeTitle(node.type);
+  const stateLabel = node.cleared ? 'Completado' : available ? 'Disponible' : 'Bloqueado';
   return `<div class="map-detail-card map-detail-${node.type}">
+    <button class="map-detail-toggle" type="button" data-sheet-toggle aria-label="Alternar detalle">
+      <span></span>
+    </button>
     <div class="map-detail-heading">
       <span class="detail-icon">${iconFor(node.type)}</span>
       <div>
-        <span class="eyebrow">${node.cleared ? 'Completado' : available ? 'Disponible' : 'Bloqueado'}</span>
+        <span class="eyebrow">${stateLabel}</span>
         <h3>${escapeHtml(title)}</h3>
       </div>
+      <span class="detail-state detail-state-${node.cleared ? 'done' : available ? 'live' : 'locked'}">${stateLabel}</span>
     </div>
     <p>${nodeDescription(node.type)}</p>
     <div class="map-detail-meta">
       <span>Acto ${node.act}</span>
       <span>Piso ${node.depth + 1}</span>
+      <span>${nodeTypeReward(node.type)}</span>
     </div>
     <button id="enter-node" class="pixel-button ${available ? '' : 'ghost'}" data-node-id="${node.id}" ${available ? '' : 'disabled'}>
       ${available ? 'Entrar' : node.cleared ? 'Ruta tomada' : 'Aun no'}
     </button>
   </div>`;
+}
+
+function nodeTypeReward(type: MapNodeState['type']): string {
+  const labels: Record<MapNodeState['type'], string> = {
+    combat: 'Oro + premio',
+    elite: 'Premio raro',
+    shop: 'Compra',
+    event: 'Riesgo',
+    rest: 'Cura',
+    boss: 'Reliquia'
+  };
+  return labels[type];
 }
 
 export function nodeDescription(type: MapNodeState['type']): string {

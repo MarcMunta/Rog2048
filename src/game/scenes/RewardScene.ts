@@ -6,6 +6,8 @@ import { rewardCard } from '../ui/RewardCard';
 import { autoClearUi, sceneBackground, transitionTo } from './sceneHelpers';
 
 export class RewardScene extends Phaser.Scene {
+  private selectionLocked = false;
+
   constructor() {
     super('RewardScene');
   }
@@ -19,6 +21,7 @@ export class RewardScene extends Phaser.Scene {
       transitionTo(this, 'MapScene');
       return;
     }
+    this.selectionLocked = false;
     const cards = reward.choices.map(rewardCard).join('');
     const root = setUi(`<main class="screen reward-screen">
       <section class="screen-inner reward-shell">
@@ -35,8 +38,10 @@ export class RewardScene extends Phaser.Scene {
     </main>`);
 
     bindClick(root, '.reward-card', (card) => {
+      if (this.selectionLocked) return;
       const choice = reward.choices.find((item) => item.id === card.dataset.choiceId);
       if (!choice) return;
+      this.selectionLocked = true;
       AudioSystem.play('reward');
       card.classList.add('is-selected');
       root.querySelectorAll<HTMLElement>('.reward-card').forEach((item) => {

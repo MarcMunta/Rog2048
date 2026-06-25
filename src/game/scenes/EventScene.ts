@@ -8,6 +8,8 @@ import { iconSvg } from '../assets/icons';
 import { autoClearUi, sceneBackground, transitionTo } from './sceneHelpers';
 
 export class EventScene extends Phaser.Scene {
+  private choiceLocked = false;
+
   constructor() {
     super('EventScene');
   }
@@ -20,6 +22,7 @@ export class EventScene extends Phaser.Scene {
       transitionTo(this, 'MainMenuScene');
       return;
     }
+    this.choiceLocked = false;
     const event = new Random(run.seed + run.floor * 991).pick(EVENTS);
     const choices = event.choices
       .map(
@@ -46,8 +49,10 @@ export class EventScene extends Phaser.Scene {
       </section>
     </main>`);
     bindClick(root, '.event-choice', (button) => {
+      if (this.choiceLocked) return;
       const choice = event.choices.find((item) => item.id === button.dataset.choiceId);
       if (!choice || !gameStore.run) return;
+      this.choiceLocked = true;
       AudioSystem.play('reward');
       button.classList.add('is-selected');
       this.time.delayedCall(190, () => {

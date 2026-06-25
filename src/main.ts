@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import '@fontsource/vt323';
 import './styles.css';
 import { BootScene } from './game/scenes/BootScene';
 import { PreloadScene } from './game/scenes/PreloadScene';

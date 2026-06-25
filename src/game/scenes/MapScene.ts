@@ -15,6 +15,8 @@ interface MapPoint {
 }
 
 export class MapScene extends Phaser.Scene {
+  private navigationLocked = false;
+
   constructor() {
     super('MapScene');
   }
@@ -27,6 +29,7 @@ export class MapScene extends Phaser.Scene {
       transitionTo(this, 'MainMenuScene');
       return;
     }
+    this.navigationLocked = false;
 
     const selectedNode = this.defaultSelectedNode(run.map);
     const points = this.mapPoints(run.map.nodes);
@@ -71,6 +74,12 @@ export class MapScene extends Phaser.Scene {
 
     root.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
+      if (target.closest('[data-sheet-toggle]')) {
+        this.toggleMapSheet(root);
+        AudioSystem.play('button');
+        return;
+      }
+
       const nodeButton = target.closest<HTMLElement>('.map-node');
       if (nodeButton) {
         const id = nodeButton.dataset.nodeId;
@@ -82,13 +91,15 @@ export class MapScene extends Phaser.Scene {
       }
 
       const enter = target.closest<HTMLElement>('#enter-node');
-      if (!enter || enter.hasAttribute('disabled')) return;
+      if (!enter || enter.hasAttribute('disabled') || this.navigationLocked) return;
       const id = enter.dataset.nodeId;
       if (!id) return;
+      this.navigationLocked = true;
       AudioSystem.play('button');
       this.startNode(id);
     });
     bindClick(root, '#menu', () => transitionTo(this, 'MainMenuScene'));
+    this.scrollNodeIntoView(root, selectedNode?.id);
     this.cameras.main.fadeIn(180, 8, 8, 22);
   }
 
@@ -107,9 +118,24 @@ export class MapScene extends Phaser.Scene {
     const detail = root.querySelector<HTMLElement>('[data-map-detail]');
     if (!detail) return;
     detail.innerHTML = mapNodeDetail(node, map.availableNodeIds.includes(node.id));
+    detail.classList.remove('expanded');
     detail.classList.remove('sheet-pop');
     void detail.offsetWidth;
     detail.classList.add('sheet-pop');
+    this.scrollNodeIntoView(root, node.id);
+  }
+
+  private toggleMapSheet(root: HTMLElement): void {
+    root.querySelector<HTMLElement>('[data-map-detail]')?.classList.toggle('expanded');
+  }
+
+  private scrollNodeIntoView(root: HTMLElement, nodeId?: string | null): void {
+    if (!nodeId || !window.matchMedia('(max-width: 760px)').matches) return;
+    requestAnimationFrame(() => {
+      root
+        .querySelector<HTMLElement>(`.map-node[data-node-id="${nodeId}"]`)
+        ?.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+    });
   }
 
   private startNode(nodeId: string): void {

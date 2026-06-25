@@ -12,6 +12,7 @@
     "test:e2e": "node scripts/e2e-smoke.cjs"
   },
   "dependencies": {
+    "@fontsource/vt323": "^5.2.7",
     "phaser": "^3.90.0"
   },
   "devDependencies": {

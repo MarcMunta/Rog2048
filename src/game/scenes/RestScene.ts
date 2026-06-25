@@ -8,6 +8,8 @@ import { iconSvg } from '../assets/icons';
 import { autoClearUi, sceneBackground, transitionTo } from './sceneHelpers';
 
 export class RestScene extends Phaser.Scene {
+  private choiceLocked = false;
+
   constructor() {
     super('RestScene');
   }
@@ -20,6 +22,7 @@ export class RestScene extends Phaser.Scene {
       transitionTo(this, 'MainMenuScene');
       return;
     }
+    this.choiceLocked = false;
     const root = setUi(`<main class="screen rest-screen">
       <section class="screen-inner rest-shell">
         <div class="scene-sigil" aria-hidden="true">Z</div>
@@ -38,7 +41,8 @@ export class RestScene extends Phaser.Scene {
       </section>
     </main>`);
     bindClick(root, '.rest-card', (card) => {
-      if (!gameStore.run) return;
+      if (this.choiceLocked || !gameStore.run) return;
+      this.choiceLocked = true;
       const action = card.dataset.action;
       card.classList.add('is-selected');
       if (action === 'heal') {
