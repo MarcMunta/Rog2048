@@ -13,6 +13,9 @@ import{n as e}from"./rolldown-runtime-Bh1tDfsg.js";import{t}from"./phaser-BHVmS0
   </svg>`}function B(e,t=``){return R(be[e]??`spark`,t)}function V(e){let t=Object.entries(e.data??{}).map(([e,t])=>`data-${e}="${String(t)}"`).join(` `);return`<button ${e.id?`id="${e.id}"`:``} class="pixel-button ${e.variant??`primary`}" ${t} ${e.disabled?`disabled`:``}>${e.icon?`<span class="button-icon">${e.icon}</span>`:``}<span>${e.label}</span></button>`}var Se=class extends n.default.Scene{constructor(){super(`MainMenuScene`)}create(){P(this),I(this),k.reload();let e=k.run!==null,t=A(`<main class="screen menu-screen">
       <section class="screen-inner menu-grid">
         <div class="menu-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="menu-crest" aria-hidden="true">
+          <i>2</i><i>0</i><i>4</i><i>8</i>
+        </div>
         <div class="title-stack">
           <h1>Rog2048</h1>
           <p>Fusiones, objetivos letales y talismanes que rompen reglas.</p>
